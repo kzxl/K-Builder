@@ -30,6 +30,7 @@ class PluginLoader
         private readonly ComponentRegistry $components,
         private readonly AdminMenuRegistry $adminMenus,
         private readonly LoggerInterface   $logger,
+        private readonly \Twig\Environment $twig
     ) {}
 
     public function loadAll(App $app): void
@@ -80,6 +81,15 @@ class PluginLoader
             $plugin->registerAdminMenus($this->adminMenus);
 
             $this->registry->register($plugin);
+
+            // Tự động đăng ký Twig namespace nếu có thư mục templates/
+            $templatesDir = dirname($pluginFile) . '/templates';
+            if (is_dir($templatesDir)) {
+                $loader = $this->twig->getLoader();
+                if ($loader instanceof \Twig\Loader\FilesystemLoader) {
+                    $loader->addPath($templatesDir, $plugin->getId());
+                }
+            }
 
             $this->logger->debug("Plugin loaded: {$plugin->getId()} v{$plugin->getVersion()}");
         } catch (\Throwable $e) {

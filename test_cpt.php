@@ -1,29 +1,15 @@
 <?php
-require 'vendor/autoload.php';
+define('KB_ROOT', __DIR__ . '/src');
+require __DIR__ . '/vendor/autoload.php';
 
-$app = KBuilder\Core\Application::create();
+$container = (new \DI\ContainerBuilder())
+    ->addDefinitions(__DIR__ . '/src/Core/container.php')
+    ->build();
 
-// Lấy ContentTypeRegistry từ container
-$container = $app->getContainer();
-$registry = $container->get(KBuilder\Core\Content\ContentTypeRegistry::class);
+$registry = $container->get(\KBuilder\Core\Content\ContentTypeRegistry::class);
 
-// Thử đăng ký 1 post type mới
-$registry->registerPostType('product', [
-    'label' => 'Sản phẩm',
-    'icon' => 'Package',
-    'taxonomies' => ['product_cat']
-]);
-$registry->registerTaxonomy('product_cat', [
-    'label' => 'Danh mục Sản phẩm',
-    'hierarchical' => true
-]);
+echo "Registered Post Types:\n";
+print_r($registry->getPostTypes());
 
-$_SERVER['SCRIPT_NAME'] = '/kbuilder/public/index.php';
-$_SERVER['REQUEST_URI'] = '/kbuilder/public/api/content-types';
-
-// Gọi API test
-$request = (new Slim\Psr7\Factory\ServerRequestFactory())->createServerRequest('GET', '/kbuilder/public/api/content-types');
-$response = $app->handle($request);
-
-echo "Content Types:\n";
-echo (string)$response->getBody() . "\n";
+echo "\nRegistered Taxonomies:\n";
+print_r($registry->getTaxonomies());

@@ -78,10 +78,9 @@ class ComponentExtension extends AbstractExtension
         }
 
         try {
-            $html = $this->twig->render($component->getTemplate(), [
-                'props' => $resolvedProps,
-                'type'  => $type,
-            ]);
+            $html = $this->twig->render($component->getTemplate(), array_merge($resolvedProps, [
+                'component_type' => $type,
+            ]));
 
             // Cho phép các plugin thay đổi nội dung HTML (Hook)
             return $this->hooks->applyFilters('kbuilder/render_section', $html, $type, $resolvedProps);

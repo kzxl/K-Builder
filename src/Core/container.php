@@ -56,6 +56,16 @@ return [
             'label' => 'Danh mục',
             'hierarchical' => true
         ]);
+        $registry->registerPostType('product', [
+            'label' => 'Sản phẩm',
+            'icon' => 'Box',
+            'taxonomies' => ['product_cat']
+        ]);
+
+        $registry->registerTaxonomy('product_cat', [
+            'label' => 'Danh mục sản phẩm',
+            'hierarchical' => true
+        ]);
         
         return $registry;
     }),

@@ -1,0 +1,10 @@
+<div class="kbuilder-hero" style="background-image: url('{{ bg_image }}'); background-size: cover; background-position: center; padding: 100px 20px; text-align: {{ text_align|default('center') }}; color: #fff; position: relative;">
+    <div style="position: absolute; inset: 0; background: rgba(0,0,0,0.5); z-index: 1;"></div>
+    <div style="position: relative; z-index: 2; max-width: 800px; margin: 0 auto;">
+        <h1 style="font-size: 3rem; font-weight: bold; margin-bottom: 1rem;">{{ title }}</h1>
+        <p style="font-size: 1.25rem; margin-bottom: 2rem; opacity: 0.9;">{{ subtitle }}</p>
+        {% if button_link and button_text %}
+        <a href="{{ button_link }}" style="display: inline-block; padding: 12px 24px; background: #3b82f6; color: #fff; text-decoration: none; border-radius: 6px; font-weight: 600;">{{ button_text }}</a>
+        {% endif %}
+    </div>
+</div>
