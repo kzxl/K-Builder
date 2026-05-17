@@ -8,6 +8,7 @@ import PagesList from './pages/Pages/PagesList';
 import PostList from './pages/Posts/PostList';
 import PostEditor from './pages/Posts/PostEditor';
 import TaxonomyList from './pages/Taxonomies/TaxonomyList';
+import TaxonomyEditor from './pages/Taxonomies/TaxonomyEditor';
 import MediaLibrary from './pages/Media/MediaLibrary';
 import Builder from './pages/Builder/Builder';
 import Settings from './pages/Settings';
@@ -69,6 +70,8 @@ export default function App() {
           <Route path="content/:type/new" element={<PostEditor />} />
           <Route path="content/:type/:id" element={<PostEditor />} />
           <Route path="taxonomies/:type" element={<TaxonomyList />} />
+          <Route path="taxonomies/:type/new" element={<TaxonomyEditor />} />
+          <Route path="taxonomies/:type/:id" element={<TaxonomyEditor />} />
           <Route path="media" element={<MediaLibrary />} />
           <Route path="menus" element={<Menus />} />
           <Route path="settings" element={<Settings />} />

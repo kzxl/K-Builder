@@ -78,6 +78,7 @@ class Router
             // Taxonomies API
             $g->get('/taxonomies', [TaxonomyController::class, 'index']);
             $g->post('/taxonomies', [TaxonomyController::class, 'store']);
+            $g->get('/taxonomies/{id}', [TaxonomyController::class, 'show']);
             $g->put('/taxonomies/{id}', [TaxonomyController::class, 'update']);
             $g->delete('/taxonomies/{id}', [TaxonomyController::class, 'destroy']);
 

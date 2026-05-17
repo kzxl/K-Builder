@@ -97,6 +97,19 @@ class TaxonomyController
         return $this->json($response, ['success' => true, 'id' => $id]);
     }
 
+    public function show(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
+    {
+        $id = (int) $args['id'];
+        $siteId = $this->getSiteId($request);
+
+        $tax = DB::table('taxonomies')->where('id', $id)->where('site_id', $siteId)->first();
+        if (!$tax) {
+            return $this->json($response, ['success' => false, 'error' => 'Taxonomy not found'], 404);
+        }
+
+        return $this->json($response, ['success' => true, 'data' => $tax]);
+    }
+
     public function update(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
     {
         $id = (int) $args['id'];

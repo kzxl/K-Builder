@@ -1,26 +1,16 @@
 import { useState, useEffect } from 'react';
-import { Edit2, Trash2, Tags } from 'lucide-react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
+import { Tags, Edit2, Trash2 } from 'lucide-react';
 import api from '../../lib/api';
 
 export default function TaxonomyList() {
   const { type } = useParams<{ type: string }>();
+  const navigate = useNavigate();
   const [taxonomies, setTaxonomies] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [editingId, setEditingId] = useState<number | null>(null);
   const [taxonomyType, setTaxonomyType] = useState<any>(null);
 
-  const [form, setForm] = useState({
-    name: '',
-    slug: '',
-    description: '',
-    image_id: null as number | null,
-    type: type || 'category'
-  });
-
   useEffect(() => {
-    setForm(prev => ({ ...prev, type: type || 'category' }));
     fetchTax();
   }, [type]);
 
@@ -39,54 +29,6 @@ export default function TaxonomyList() {
     } finally {
       setLoading(false);
     }
-  };
-
-  const generateSlug = (text: string) => {
-    return text.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
-  };
-
-  const handleNameChange = (e: any) => {
-    const name = e.target.value;
-    if (!editingId && !form.slug) {
-      setForm({ ...form, name, slug: generateSlug(name) });
-    } else {
-      setForm({ ...form, name });
-    }
-  };
-
-  const handleSubmit = async (e: any) => {
-    e.preventDefault();
-    setSaving(true);
-    try {
-      if (editingId) {
-        await api.put(`/taxonomies/${editingId}`, form);
-        setEditingId(null);
-      } else {
-        await api.post('/taxonomies', form);
-      }
-      setForm({ name: '', slug: '', description: '', image_id: null, type: type || 'category' });
-      fetchTax();
-    } catch (err: any) {
-      alert('Lỗi: ' + (err.response?.data?.error || err.message));
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const handleEdit = (tax: any) => {
-    setEditingId(tax.id);
-    setForm({
-      name: tax.name,
-      slug: tax.slug,
-      description: tax.description || '',
-      image_id: tax.image_id || null,
-      type: tax.type || 'category'
-    });
-  };
-
-  const handleCancelEdit = () => {
-    setEditingId(null);
-    setForm({ name: '', slug: '', description: '', image_id: null, type: type || 'category' });
   };
 
   const handleDelete = async (id: number) => {
@@ -108,58 +50,13 @@ export default function TaxonomyList() {
           <h1 className="kb-page-title">Quản lý {taxonomyType?.label || 'Danh mục'}</h1>
           <p className="kb-page-subtitle">Quản lý phân loại nội dung cho {taxonomyType?.label || 'danh mục'}</p>
         </div>
+        <button className="kb-btn kb-btn--primary" onClick={() => navigate(`/taxonomies/${type || 'category'}/new`)}>
+          <Tags size={16} /> Thêm mới
+        </button>
       </div>
 
-      <div style={{ display: 'flex', gap: '2rem', alignItems: 'flex-start' }}>
-        {/* Form bên trái */}
-        <div className="kb-card" style={{ width: '350px', position: 'sticky', top: '2rem' }}>
-          <h3 style={{ fontSize: '1.1rem', fontWeight: 600, marginBottom: '1.5rem' }}>
-            {editingId ? 'Sửa Danh mục' : 'Thêm Danh mục mới'}
-          </h3>
-          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-            <div>
-              <label className="kb-label">Tên danh mục</label>
-              <input type="text" className="kb-input" value={form.name} onChange={handleNameChange} required />
-            </div>
-            <div>
-              <label className="kb-label">Đường dẫn (Slug)</label>
-              <input type="text" className="kb-input" value={form.slug} onChange={e => setForm({ ...form, slug: e.target.value })} required />
-            </div>
-            <div>
-              <label className="kb-label">Loại</label>
-              <input type="text" className="kb-input" value={form.type} disabled style={{ background: 'hsl(var(--color-surface-hover))', cursor: 'not-allowed' }} />
-            </div>
-            <div>
-              <label className="kb-label">Mô tả</label>
-              <textarea className="kb-input" rows={3} value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} />
-            </div>
-            <div>
-              <label className="kb-label">Ảnh đại diện (Tùy chọn)</label>
-              <div 
-                style={{ border: '2px dashed hsl(var(--color-border))', borderRadius: 'var(--radius-md)', padding: '1rem', textAlign: 'center', color: 'hsl(var(--color-text-muted))', cursor: 'pointer' }}
-                onClick={() => alert('Media Library đang phát triển')}
-              >
-                {form.image_id ? (
-                  <div style={{ color: 'hsl(var(--color-primary))', fontWeight: 500 }}>Ảnh #{form.image_id} (Click để đổi)</div>
-                ) : (
-                  <div>Click để chọn ảnh</div>
-                )}
-              </div>
-            </div>
-            <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
-              <button type="submit" className="kb-btn kb-btn--primary" style={{ flex: 1 }} disabled={saving}>
-                {saving ? 'Đang lưu...' : (editingId ? 'Cập nhật' : 'Thêm mới')}
-              </button>
-              {editingId && (
-                <button type="button" className="kb-btn" onClick={handleCancelEdit}>Hủy</button>
-              )}
-            </div>
-          </form>
-        </div>
-
-        {/* Bảng bên phải */}
-        <div className="kb-table-container" style={{ flex: 1 }}>
-          <table className="kb-table">
+      <div className="kb-table-container">
+        <table className="kb-table">
             <thead>
               <tr>
                 <th>Tên danh mục</th>
@@ -192,7 +89,7 @@ export default function TaxonomyList() {
                   </td>
                   <td>
                     <div style={{ display: 'flex', gap: '0.5rem' }}>
-                      <button className="kb-icon-btn" onClick={() => handleEdit(tax)} title="Sửa">
+                      <button className="kb-icon-btn" onClick={() => navigate(`/taxonomies/${type || 'category'}/${tax.id}`)} title="Sửa">
                         <Edit2 size={16} />
                       </button>
                       <button className="kb-icon-btn" style={{ color: 'hsl(var(--color-danger))' }} onClick={() => handleDelete(tax.id)} title="Xóa">
@@ -211,7 +108,6 @@ export default function TaxonomyList() {
             </div>
           )}
         </div>
-      </div>
     </div>
   );
 }
