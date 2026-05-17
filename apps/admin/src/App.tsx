@@ -65,10 +65,10 @@ export default function App() {
           <Route index element={<Navigate to="/dashboard" replace />} />
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="pages" element={<PagesList />} />
-          <Route path="posts" element={<PostList />} />
-          <Route path="posts/create" element={<PostEditor />} />
-          <Route path="posts/:id" element={<PostEditor />} />
-          <Route path="taxonomies" element={<TaxonomyList />} />
+          <Route path="content/:type" element={<PostList />} />
+          <Route path="content/:type/new" element={<PostEditor />} />
+          <Route path="content/:type/:id" element={<PostEditor />} />
+          <Route path="taxonomies/:type" element={<TaxonomyList />} />
           <Route path="media" element={<MediaLibrary />} />
           <Route path="menus" element={<Menus />} />
           <Route path="settings" element={<Settings />} />

@@ -7,9 +7,14 @@ namespace KBuilder\Http\Controllers\Api;
 use Illuminate\Database\Capsule\Manager as DB;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use KBuilder\Core\Content\ContentTypeRegistry;
 
 class PostController
 {
+    public function __construct(
+        private readonly ContentTypeRegistry $registry
+    ) {}
+
     private function json(ResponseInterface $response, array $data, int $status = 200): ResponseInterface
     {
         $response->getBody()->write(json_encode($data, JSON_UNESCAPED_UNICODE));
@@ -24,9 +29,16 @@ class PostController
     public function index(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
         $siteId = $this->getSiteId($request);
+        $queryParams = $request->getQueryParams();
+        $type = $queryParams['type'] ?? 'post';
+
+        if (!$this->registry->hasPostType($type)) {
+            return $this->json($response, ['success' => false, 'error' => 'Invalid post type'], 400);
+        }
+
         $posts = DB::table('posts')
             ->where('site_id', $siteId)
-            ->where('type', 'post')
+            ->where('type', $type)
             ->whereNull('deleted_at')
             ->orderBy('created_at', 'desc')
             ->get(['id', 'title', 'slug', 'status', 'published_at', 'created_at']);
@@ -64,10 +76,15 @@ class PostController
 
         $now = date('Y-m-d H:i:s');
         $status = $body['status'] ?? 'draft';
+        $type = $body['type'] ?? 'post';
+
+        if (!$this->registry->hasPostType($type)) {
+            return $this->json($response, ['success' => false, 'error' => 'Invalid post type'], 400);
+        }
 
         $id = DB::table('posts')->insertGetId([
             'site_id' => $siteId,
-            'type' => 'post',
+            'type' => $type,
             'title' => $body['title'],
             'slug' => $body['slug'],
             'content' => $body['content'] ?? null,

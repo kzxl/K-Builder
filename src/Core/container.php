@@ -6,6 +6,7 @@ use KBuilder\Core\Plugin\PluginLoader;
 use KBuilder\Core\Plugin\PluginRegistry;
 use KBuilder\Core\Hook\HookSystem;
 use KBuilder\Core\Component\ComponentRegistry;
+use KBuilder\Core\Content\ContentTypeRegistry;
 use KBuilder\Core\Twig\ComponentExtension;
 use KBuilder\Core\Router;
 use KBuilder\Core\Cache\CacheManager;
@@ -39,6 +40,25 @@ return [
 
     // Component Registry
     ComponentRegistry::class => autowire(ComponentRegistry::class),
+
+    // Content Type Registry
+    ContentTypeRegistry::class => factory(function () {
+        $registry = new ContentTypeRegistry();
+        
+        // Đăng ký CPT và Taxonomy mặc định
+        $registry->registerPostType('post', [
+            'label' => 'Bài viết',
+            'icon' => 'FileText',
+            'taxonomies' => ['category']
+        ]);
+        
+        $registry->registerTaxonomy('category', [
+            'label' => 'Danh mục',
+            'hierarchical' => true
+        ]);
+        
+        return $registry;
+    }),
 
     // Cache
     CacheManager::class => factory(function ($c) {

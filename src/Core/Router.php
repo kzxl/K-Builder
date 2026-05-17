@@ -16,6 +16,7 @@ use KBuilder\Http\Controllers\Api\AdminMenuController;
 use KBuilder\Http\Controllers\Api\MenuController;
 use KBuilder\Http\Controllers\Api\PluginController;
 use KBuilder\Http\Controllers\Api\SettingsController;
+use KBuilder\Http\Controllers\Api\ContentTypeController;
 use KBuilder\Http\Middleware\JwtMiddleware;
 use Psr\Container\ContainerInterface;
 use Slim\App;
@@ -52,6 +53,9 @@ class Router
 
             // Dashboard
             $g->get('/dashboard/stats', [\KBuilder\Http\Controllers\Api\DashboardController::class, 'stats']);
+
+            // Content Types
+            $g->get('/content-types', [ContentTypeController::class, 'index']);
 
             // Pages
             $g->get('/pages', [PageController::class, 'index']);

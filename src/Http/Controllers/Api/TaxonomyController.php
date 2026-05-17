@@ -7,9 +7,14 @@ namespace KBuilder\Http\Controllers\Api;
 use Illuminate\Database\Capsule\Manager as DB;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use KBuilder\Core\Content\ContentTypeRegistry;
 
 class TaxonomyController
 {
+    public function __construct(
+        private readonly ContentTypeRegistry $registry
+    ) {}
+
     private function json(ResponseInterface $response, array $data, int $status = 200): ResponseInterface
     {
         $response->getBody()->write(json_encode($data, JSON_UNESCAPED_UNICODE));
@@ -26,6 +31,10 @@ class TaxonomyController
         $siteId = $this->getSiteId($request);
         $queryParams = $request->getQueryParams();
         $type = $queryParams['type'] ?? 'category';
+
+        if (!$this->registry->getTaxonomy($type)) {
+            return $this->json($response, ['success' => false, 'error' => 'Invalid taxonomy type'], 400);
+        }
 
         $taxonomies = DB::table('taxonomies')
             ->where('site_id', $siteId)
@@ -66,14 +75,21 @@ class TaxonomyController
         }
 
         $now = date('Y-m-d H:i:s');
+        $type = $body['type'] ?? 'category';
+
+        if (!$this->registry->getTaxonomy($type)) {
+            return $this->json($response, ['success' => false, 'error' => 'Invalid taxonomy type'], 400);
+        }
+
         $id = DB::table('taxonomies')->insertGetId([
             'site_id' => $siteId,
-            'type' => $body['type'],
+            'type' => $type,
             'name' => $body['name'],
             'slug' => $body['slug'],
             'description' => $body['description'] ?? null,
             'parent_id' => $body['parent_id'] ?? null,
             'image_id' => $body['image_id'] ?? null,
+            'sort_order' => $body['sort_order'] ?? 0,
             'created_at' => $now,
             'updated_at' => $now,
         ]);
@@ -96,10 +112,11 @@ class TaxonomyController
         if (isset($body['name'])) $updateData['name'] = $body['name'];
         if (isset($body['slug'])) $updateData['slug'] = $body['slug'];
         if (isset($body['description'])) $updateData['description'] = $body['description'];
-        if (array_key_exists('parent_id', $body)) $updateData['parent_id'] = $body['parent_id'];
-        if (array_key_exists('image_id', $body)) $updateData['image_id'] = $body['image_id'];
+        if (isset($body['parent_id'])) $updateData['parent_id'] = $body['parent_id'];
+        if (isset($body['image_id'])) $updateData['image_id'] = $body['image_id'];
+        if (isset($body['sort_order'])) $updateData['sort_order'] = $body['sort_order'];
 
-        DB::table('taxonomies')->where('id', $id)->update($updateData);
+        DB::table('taxonomies')->where('id', $id)->where('site_id', $siteId)->update($updateData);
 
         return $this->json($response, ['success' => true]);
     }

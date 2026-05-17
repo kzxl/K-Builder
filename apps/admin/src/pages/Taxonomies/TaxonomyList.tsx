@@ -1,27 +1,38 @@
 import { useState, useEffect } from 'react';
 import { Edit2, Trash2, Tags } from 'lucide-react';
+import { useParams } from 'react-router-dom';
 import api from '../../lib/api';
 
 export default function TaxonomyList() {
+  const { type } = useParams<{ type: string }>();
   const [taxonomies, setTaxonomies] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
+  const [taxonomyType, setTaxonomyType] = useState<any>(null);
 
   const [form, setForm] = useState({
     name: '',
     slug: '',
     description: '',
-    type: 'category'
+    image_id: null as number | null,
+    type: type || 'category'
   });
 
   useEffect(() => {
+    setForm(prev => ({ ...prev, type: type || 'category' }));
     fetchTax();
-  }, []);
+  }, [type]);
 
   const fetchTax = async () => {
     try {
-      const res = await api.get('/taxonomies');
+      setLoading(true);
+      const typeRes = await api.get('/content-types');
+      if (typeRes.data?.success) {
+        setTaxonomyType(typeRes.data.data.taxonomies[type || 'category'] || { label: 'Danh mục' });
+      }
+
+      const res = await api.get(`/taxonomies?type=${type || 'category'}`);
       setTaxonomies(res.data.data);
     } catch (e) {
       alert('Lỗi khi tải danh mục');
@@ -53,7 +64,7 @@ export default function TaxonomyList() {
       } else {
         await api.post('/taxonomies', form);
       }
-      setForm({ name: '', slug: '', description: '', type: 'category' });
+      setForm({ name: '', slug: '', description: '', image_id: null, type: type || 'category' });
       fetchTax();
     } catch (err: any) {
       alert('Lỗi: ' + (err.response?.data?.error || err.message));
@@ -68,13 +79,14 @@ export default function TaxonomyList() {
       name: tax.name,
       slug: tax.slug,
       description: tax.description || '',
+      image_id: tax.image_id || null,
       type: tax.type || 'category'
     });
   };
 
   const handleCancelEdit = () => {
     setEditingId(null);
-    setForm({ name: '', slug: '', description: '', type: 'category' });
+    setForm({ name: '', slug: '', description: '', image_id: null, type: type || 'category' });
   };
 
   const handleDelete = async (id: number) => {
@@ -93,8 +105,8 @@ export default function TaxonomyList() {
     <div className="kb-page-container">
       <div className="kb-page-header">
         <div>
-          <h1 className="kb-page-title">Quản lý Danh mục</h1>
-          <p className="kb-page-subtitle">Phân loại bài viết và sản phẩm</p>
+          <h1 className="kb-page-title">Quản lý {taxonomyType?.label || 'Danh mục'}</h1>
+          <p className="kb-page-subtitle">Quản lý phân loại nội dung cho {taxonomyType?.label || 'danh mục'}</p>
         </div>
       </div>
 
@@ -115,14 +127,24 @@ export default function TaxonomyList() {
             </div>
             <div>
               <label className="kb-label">Loại</label>
-              <select className="kb-input" value={form.type} onChange={e => setForm({ ...form, type: e.target.value })}>
-                <option value="category">Category (Chuyên mục)</option>
-                <option value="tag">Tag (Thẻ)</option>
-              </select>
+              <input type="text" className="kb-input" value={form.type} disabled style={{ background: 'hsl(var(--color-surface-hover))', cursor: 'not-allowed' }} />
             </div>
             <div>
               <label className="kb-label">Mô tả</label>
               <textarea className="kb-input" rows={3} value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} />
+            </div>
+            <div>
+              <label className="kb-label">Ảnh đại diện (Tùy chọn)</label>
+              <div 
+                style={{ border: '2px dashed hsl(var(--color-border))', borderRadius: 'var(--radius-md)', padding: '1rem', textAlign: 'center', color: 'hsl(var(--color-text-muted))', cursor: 'pointer' }}
+                onClick={() => alert('Media Library đang phát triển')}
+              >
+                {form.image_id ? (
+                  <div style={{ color: 'hsl(var(--color-primary))', fontWeight: 500 }}>Ảnh #{form.image_id} (Click để đổi)</div>
+                ) : (
+                  <div>Click để chọn ảnh</div>
+                )}
+              </div>
             </div>
             <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
               <button type="submit" className="kb-btn kb-btn--primary" style={{ flex: 1 }} disabled={saving}>

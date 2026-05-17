@@ -22,6 +22,8 @@ export default function AdminLayout() {
   const { user, logout, refreshToken } = useAuthStore();
   const navigate = useNavigate();
   const [pluginMenus, setPluginMenus] = useState<AdminMenu[]>([]);
+  const [contentTypes, setContentTypes] = useState<Record<string, any>>({});
+  const [taxonomies, setTaxonomies] = useState<Record<string, any>>({});
 
   const handleLogout = async () => {
     try {
@@ -35,11 +37,20 @@ export default function AdminLayout() {
   };
 
   useEffect(() => {
+    // Load plugin menus
     api.get('/admin/menus').then(res => {
       if (res.data?.success) {
         setPluginMenus(res.data.data);
       }
     }).catch(err => console.error('Failed to load plugin menus', err));
+
+    // Load content types and taxonomies
+    api.get('/content-types').then(res => {
+      if (res.data?.success) {
+        setContentTypes(res.data.data.post_types || {});
+        setTaxonomies(res.data.data.taxonomies || {});
+      }
+    }).catch(err => console.error('Failed to load content types', err));
   }, []);
 
   return (
@@ -59,14 +70,26 @@ export default function AdminLayout() {
             <Layout size={20} />
             <span>Trang (Pages)</span>
           </NavLink>
-          <NavLink to="/posts" className={({isActive}) => `kb-nav-item ${isActive ? 'active' : ''}`}>
-            <FileText size={20} />
-            <span>Nội dung (Items)</span>
-          </NavLink>
-          <NavLink to="/taxonomies" className={({isActive}) => `kb-nav-item ${isActive ? 'active' : ''}`}>
-            <Tags size={20} />
-            <span>Danh mục</span>
-          </NavLink>
+          
+          <div className="kb-nav-label" style={{ marginTop: '1.5rem' }}>Nội dung</div>
+          {Object.entries(contentTypes).map(([type, config]) => {
+            const IconComponent = IconMap[config.icon] || FileText;
+            return (
+              <NavLink key={type} to={`/content/${type}`} className={({isActive}) => `kb-nav-item ${isActive ? 'active' : ''}`}>
+                <IconComponent size={20} />
+                <span>{config.label}</span>
+              </NavLink>
+            );
+          })}
+
+          {Object.entries(taxonomies).map(([type, config]) => (
+            <NavLink key={type} to={`/taxonomies/${type}`} className={({isActive}) => `kb-nav-item ${isActive ? 'active' : ''}`}>
+              <Tags size={20} />
+              <span>{config.label}</span>
+            </NavLink>
+          ))}
+
+          <div className="kb-nav-label" style={{ marginTop: '1.5rem' }}>Tài nguyên</div>
           <NavLink to="/media" className={({isActive}) => `kb-nav-item ${isActive ? 'active' : ''}`}>
             <Image size={20} />
             <span>Thư viện (Media)</span>

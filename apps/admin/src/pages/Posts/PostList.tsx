@@ -1,20 +1,29 @@
 import { useState, useEffect } from 'react';
 import { Plus, Edit2, Trash2, FileText } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import api from '../../lib/api';
 
 export default function PostList() {
+  const { type } = useParams<{ type: string }>();
   const [posts, setPosts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [contentType, setContentType] = useState<any>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
     fetchPosts();
-  }, []);
+  }, [type]);
 
   const fetchPosts = async () => {
     try {
-      const res = await api.get('/posts');
+      setLoading(true);
+      // Fetch content type info first (could be cached in a real app)
+      const typeRes = await api.get('/content-types');
+      if (typeRes.data?.success) {
+        setContentType(typeRes.data.data.post_types[type || 'post'] || { label: 'Nội dung' });
+      }
+
+      const res = await api.get(`/posts?type=${type || 'post'}`);
       setPosts(res.data.data);
     } catch (e) {
       alert('Lỗi khi tải danh sách nội dung');
@@ -39,11 +48,11 @@ export default function PostList() {
     <div className="kb-page-container">
       <div className="kb-page-header">
         <div>
-          <h1 className="kb-page-title">Quản lý Nội dung (Items)</h1>
-          <p className="kb-page-subtitle">Quản lý bài viết, tin tức, sản phẩm và nội dung động khác</p>
+          <h1 className="kb-page-title">Quản lý {contentType?.label || 'Nội dung'}</h1>
+          <p className="kb-page-subtitle">Quản lý danh sách {contentType?.label || 'nội dung'}</p>
         </div>
-        <button className="kb-btn kb-btn--primary" onClick={() => navigate('/posts/create')}>
-          <Plus size={16} /> Thêm nội dung mới
+        <button className="kb-btn kb-btn--primary" onClick={() => navigate(`/content/${type || 'post'}/new`)}>
+          <Plus size={16} /> Thêm mới
         </button>
       </div>
 
@@ -89,7 +98,7 @@ export default function PostList() {
                 <td>{post.created_at}</td>
                 <td>
                   <div style={{ display: 'flex', gap: '0.5rem' }}>
-                    <button className="kb-icon-btn" onClick={() => navigate(`/posts/${post.id}`)} title="Sửa">
+                    <button className="kb-icon-btn" onClick={() => navigate(`/content/${type || 'post'}/${post.id}`)} title="Sửa">
                       <Edit2 size={16} />
                     </button>
                     <button className="kb-icon-btn" style={{ color: 'hsl(var(--color-danger))' }} onClick={() => handleDelete(post.id)} title="Xóa">

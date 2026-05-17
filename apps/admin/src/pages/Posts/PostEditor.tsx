@@ -4,13 +4,14 @@ import { useParams, useNavigate } from 'react-router-dom';
 import api from '../../lib/api';
 
 export default function PostEditor() {
-  const { id } = useParams();
+  const { type, id } = useParams<{ type: string; id: string }>();
   const navigate = useNavigate();
-  const isNew = !id || id === 'create';
+  const isNew = !id || id === 'new';
 
   const [loading, setLoading] = useState(!isNew);
   const [saving, setSaving] = useState(false);
   const [taxonomies, setTaxonomies] = useState<any[]>([]);
+  const [contentType, setContentType] = useState<any>(null);
 
   const [post, setPost] = useState<any>({
     title: '',
@@ -18,20 +19,31 @@ export default function PostEditor() {
     content: '',
     excerpt: '',
     status: 'draft',
+    type: type || 'post',
     taxonomies: []
   });
 
   useEffect(() => {
-    fetchTaxonomies();
+    fetchMetadata();
     if (!isNew) {
       fetchPost();
     }
-  }, [id]);
+  }, [id, type]);
 
-  const fetchTaxonomies = async () => {
+  const fetchMetadata = async () => {
     try {
-      const res = await api.get('/taxonomies');
-      setTaxonomies(res.data.data);
+      const typeRes = await api.get('/content-types');
+      if (typeRes.data?.success) {
+        const cType = typeRes.data.data.post_types[type || 'post'];
+        setContentType(cType);
+        
+        // Fetch only taxonomies supported by this CPT
+        if (cType && cType.taxonomies && cType.taxonomies.length > 0) {
+          const taxRes = await Promise.all(cType.taxonomies.map((t: string) => api.get(`/taxonomies?type=${t}`)));
+          const allTaxes = taxRes.map(res => res.data.data).flat();
+          setTaxonomies(allTaxes);
+        }
+      }
     } catch (e) {
       console.error(e);
     }
@@ -43,7 +55,7 @@ export default function PostEditor() {
       setPost(res.data.data);
     } catch (e) {
       alert('Không tìm thấy nội dung');
-      navigate('/posts');
+      navigate(`/content/${type || 'post'}`);
     } finally {
       setLoading(false);
     }
@@ -76,7 +88,7 @@ export default function PostEditor() {
     try {
       if (isNew) {
         const res = await api.post('/posts', post);
-        navigate(`/posts/${res.data.id}`);
+        navigate(`/content/${type || 'post'}/${res.data.id}`);
       } else {
         await api.put(`/posts/${id}`, post);
         alert('Lưu thành công');
@@ -94,11 +106,11 @@ export default function PostEditor() {
     <div className="kb-page-container">
       <div className="kb-page-header">
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-          <button className="kb-btn" style={{ background: 'white' }} onClick={() => navigate('/posts')}>
+          <button className="kb-btn" style={{ background: 'white' }} onClick={() => navigate(`/content/${type || 'post'}`)}>
             <ArrowLeft size={16} />
           </button>
           <div>
-            <h1 className="kb-page-title">{isNew ? 'Thêm Nội dung mới' : 'Sửa Nội dung'}</h1>
+            <h1 className="kb-page-title">{isNew ? `Thêm ${contentType?.label || 'mới'}` : `Sửa ${contentType?.label || 'nội dung'}`}</h1>
           </div>
         </div>
         <button className="kb-btn kb-btn--primary" onClick={handleSave} disabled={saving}>
