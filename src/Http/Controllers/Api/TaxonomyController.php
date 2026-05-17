@@ -41,7 +41,7 @@ class TaxonomyController
             ->where('type', $type)
             ->orderBy('sort_order', 'asc')
             ->orderBy('name', 'asc')
-            ->get(['id', 'name', 'slug', 'description', 'parent_id', 'created_at']);
+            ->get(['id', 'name', 'slug', 'description', 'parent_id', 'status', 'created_at']);
 
         // Count posts per taxonomy
         foreach ($taxonomies as $tax) {
@@ -89,6 +89,7 @@ class TaxonomyController
             'description' => $body['description'] ?? null,
             'parent_id' => $body['parent_id'] ?? null,
             'image_id' => $body['image_id'] ?? null,
+            'status' => $body['status'] ?? 'published',
             'sort_order' => $body['sort_order'] ?? 0,
             'created_at' => $now,
             'updated_at' => $now,
@@ -127,6 +128,7 @@ class TaxonomyController
         if (isset($body['description'])) $updateData['description'] = $body['description'];
         if (isset($body['parent_id'])) $updateData['parent_id'] = $body['parent_id'];
         if (isset($body['image_id'])) $updateData['image_id'] = $body['image_id'];
+        if (isset($body['status'])) $updateData['status'] = $body['status'];
         if (isset($body['sort_order'])) $updateData['sort_order'] = $body['sort_order'];
 
         DB::table('taxonomies')->where('id', $id)->where('site_id', $siteId)->update($updateData);

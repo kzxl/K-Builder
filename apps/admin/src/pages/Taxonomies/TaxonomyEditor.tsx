@@ -19,6 +19,7 @@ export default function TaxonomyEditor() {
     slug: '',
     description: '',
     image_id: null as number | null,
+    status: 'published',
     type: type || 'category'
   });
 
@@ -49,6 +50,7 @@ export default function TaxonomyEditor() {
         slug: tax.slug,
         description: tax.description || '',
         image_id: tax.image_id || null,
+        status: tax.status || 'published',
         type: tax.type || 'category'
       });
     } catch (e) {
@@ -137,6 +139,14 @@ export default function TaxonomyEditor() {
         </div>
 
         <div style={{ width: '300px', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+          <div className="kb-card">
+            <h3 style={{ fontSize: '1rem', marginBottom: '1rem', fontWeight: 600 }}>Trạng thái</h3>
+            <select className="kb-input" value={form.status} onChange={e => setForm({ ...form, status: e.target.value })}>
+              <option value="published">Công khai</option>
+              <option value="draft">Bản nháp</option>
+            </select>
+          </div>
+
           <div className="kb-card">
             <h3 style={{ fontSize: '1rem', marginBottom: '1rem', fontWeight: 600 }}>Loại</h3>
             <input type="text" className="kb-input" value={form.type} disabled style={{ background: 'hsl(var(--color-surface-hover))', cursor: 'not-allowed' }} />

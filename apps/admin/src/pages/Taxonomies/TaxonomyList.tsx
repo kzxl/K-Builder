@@ -61,7 +61,7 @@ export default function TaxonomyList() {
               <tr>
                 <th>Tên danh mục</th>
                 <th>Mô tả</th>
-                <th>Loại</th>
+                <th>Trạng thái</th>
                 <th>Bài viết</th>
                 <th style={{ width: '100px' }}>Thao tác</th>
               </tr>
@@ -80,8 +80,8 @@ export default function TaxonomyList() {
                   </td>
                   <td style={{ color: 'hsl(var(--color-text-muted))', fontSize: '0.9rem' }}>{tax.description || '-'}</td>
                   <td>
-                    <span style={{ fontSize: '0.75rem', background: 'hsl(var(--color-surface-hover))', padding: '2px 6px', borderRadius: '4px', textTransform: 'capitalize' }}>
-                      {tax.type}
+                    <span className={`kb-badge kb-badge--${tax.status === 'published' ? 'success' : 'warning'}`}>
+                      {tax.status === 'published' ? 'Công khai' : 'Bản nháp'}
                     </span>
                   </td>
                   <td>
