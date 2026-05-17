@@ -160,7 +160,7 @@ export default function PostEditor() {
             <h3 style={{ fontSize: '1rem', marginBottom: '1rem', fontWeight: 600 }}>Trạng thái</h3>
             <select className="kb-input" value={post.status} onChange={e => setPost({ ...post, status: e.target.value })}>
               <option value="draft">Bản nháp</option>
-              <option value="published">Xuất bản</option>
+              <option value="published">Đã xuất bản</option>
             </select>
           </div>
 

@@ -262,8 +262,8 @@ export default function PagesList() {
               <div className="kb-form-group">
                 <label className="kb-label">Trạng thái ban đầu</label>
                 <select className="kb-input" value={newStatus} onChange={e => setNewStatus(e.target.value)}>
-                  <option value="draft">Lưu nháp</option>
-                  <option value="published">Xuất bản ngay</option>
+                  <option value="draft">Bản nháp</option>
+                  <option value="published">Đã xuất bản</option>
                 </select>
               </div>
               

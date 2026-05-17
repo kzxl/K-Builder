@@ -142,8 +142,8 @@ export default function TaxonomyEditor() {
           <div className="kb-card">
             <h3 style={{ fontSize: '1rem', marginBottom: '1rem', fontWeight: 600 }}>Trạng thái</h3>
             <select className="kb-input" value={form.status} onChange={e => setForm({ ...form, status: e.target.value })}>
-              <option value="published">Công khai</option>
               <option value="draft">Bản nháp</option>
+              <option value="published">Đã xuất bản</option>
             </select>
           </div>
 

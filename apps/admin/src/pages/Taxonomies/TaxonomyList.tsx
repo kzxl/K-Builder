@@ -81,7 +81,7 @@ export default function TaxonomyList() {
                   <td style={{ color: 'hsl(var(--color-text-muted))', fontSize: '0.9rem' }}>{tax.description || '-'}</td>
                   <td>
                     <span className={`kb-badge kb-badge--${tax.status === 'published' ? 'success' : 'warning'}`}>
-                      {tax.status === 'published' ? 'Công khai' : 'Bản nháp'}
+                      {tax.status === 'published' ? 'Đã xuất bản' : 'Bản nháp'}
                     </span>
                   </td>
                   <td>
