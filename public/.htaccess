@@ -1,0 +1,21 @@
+Options -Indexes
+
+RewriteEngine On
+
+# Admin SPA — serve React build
+RewriteRule ^admin/build/(.*)$ ../apps/admin/dist/$1 [L]
+
+# Admin SPA routing — let React handle
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^admin(/.*)?$ index.php [L,QSA]
+
+# API routes
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^api/(.*)$ index.php [L,QSA]
+
+# Public routes — pass all to index.php
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^ index.php [L,QSA]

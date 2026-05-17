@@ -1,0 +1,25 @@
+<header class="kb-header">
+    <div class="kb-container">
+        <nav class="kb-nav" aria-label="Main navigation">
+            <a class="kb-nav__logo" href="{{ base_url }}/">
+                {{ settings.general.site_name ?? 'KBuilder' }}
+            </a>
+            
+            <ul class="kb-nav-links">
+                {% if header_menu and header_menu|length > 0 %}
+                    {% for item in header_menu %}
+                    <li>
+                        <a href="{{ item.url starts with 'http' or item.url starts with '#' ? item.url : base_url ~ item.url }}" target="{{ item.target }}">
+                            {{ item.label }}
+                        </a>
+                    </li>
+                    {% endfor %}
+                {% else %}
+                    {# Default Menu if empty #}
+                    <li><a href="{{ base_url }}/">Trang chủ</a></li>
+                    <li><a href="#features">Tính năng</a></li>
+                {% endif %}
+            </ul>
+        </nav>
+    </div>
+</header>

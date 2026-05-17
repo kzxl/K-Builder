@@ -1,0 +1,8 @@
+{% extends 'layouts/base.twig' %}
+
+{% block content %}
+    {# Render từng section theo thứ tự sort_order #}
+    {% for section in layout %}
+        {{ render_component(section)|raw }}
+    {% endfor %}
+{% endblock %}

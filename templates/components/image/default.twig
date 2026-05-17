@@ -1,0 +1,21 @@
+<section class="kb-section kb-image-block" style="padding: var(--kb-section-py) 0;">
+    <div class="kb-container" style="text-align: center;">
+        <figure style="margin: 0;">
+            <img src="{{ props.image_url }}" 
+                 alt="{{ props.alt_text|default('')|e }}" 
+                 style="
+                     max-width: 100%; 
+                     height: auto; 
+                     border-radius: {{ props.border_radius ?? '0px' }};
+                     {% if props.box_shadow %}box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1);{% endif %}
+                 " 
+                 loading="lazy" />
+                 
+            {% if props.caption %}
+                <figcaption style="margin-top: 1rem; color: var(--kb-secondary); font-size: 0.9rem;">
+                    {{ props.caption|e }}
+                </figcaption>
+            {% endif %}
+        </figure>
+    </div>
+</section>

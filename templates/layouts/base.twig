@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="{{ settings.general.locale ?? 'vi' }}" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    {# ── SEO ─────────────────────────────────────────────────────── #}
+    <title>{{ seo.title ?? page.title ~ ' | ' ~ settings.general.site_name }}</title>
+    <meta name="description" content="{{ seo.description ?? '' }}">
+    {% if seo.canonical %}<link rel="canonical" href="{{ seo.canonical }}">{% endif %}
+    {% if seo.robots %}<meta name="robots" content="{{ seo.robots }}">{% endif %}
+
+    {# ── Open Graph ───────────────────────────────────────────────── #}
+    <meta property="og:title" content="{{ seo.og_title ?? seo.title ?? page.title }}">
+    <meta property="og:description" content="{{ seo.og_description ?? seo.description ?? '' }}">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="{{ app_url ~ '/' ~ page.slug }}">
+    {% if seo.og_image %}<meta property="og:image" content="{{ seo.og_image }}">{% endif %}
+
+    {# ── Schema JSON-LD ───────────────────────────────────────────── #}
+    {% if seo.schema_ld %}
+    <script type="application/ld+json">{{ seo.schema_ld|raw }}</script>
+    {% endif %}
+
+    {# ── Theme CSS vars ───────────────────────────────────────────── #}
+    <style>
+        :root {
+            --kb-primary:    {{ theme_vars.primary ?? '#2563EB' }};
+            --kb-secondary:  {{ theme_vars.secondary ?? '#64748B' }};
+            --kb-accent:     {{ theme_vars.accent ?? '#F59E0B' }};
+            --kb-bg:         {{ theme_vars.background ?? '#FFFFFF' }};
+            --kb-text-main:  {{ theme_vars.text ?? '#1E293B' }};
+            --kb-text:       {{ theme_vars.text ?? '#1E293B' }};
+            --kb-radius:     {{ theme_vars.border_radius ?? '8px' }};
+            --kb-container:  {{ theme_vars.container_width ?? '1200px' }};
+            --kb-section-py: {{ theme_vars.section_padding ?? '80px' }};
+        }
+        {% if theme_vars.custom_css %}
+        /* Custom CSS từ Theme Manager */
+        {{ theme_vars.custom_css|raw }}
+        {% endif %}
+    </style>
+    <link rel="stylesheet" href="{{ asset_url ?? base_url }}/assets/css/kbuilder.css">
+</head>
+<body>
+
+    {% block header %}
+        {% include 'partials/header.twig' %}
+    {% endblock %}
+
+    <main id="main-content">
+        {% block content %}{% endblock %}
+    </main>
+
+    {% block footer %}
+        {% include 'partials/footer.twig' %}
+    {% endblock %}
+
+    <script src="{{ asset_url ?? base_url }}/assets/js/kbuilder.js" defer></script>
+
+    {% block scripts %}{% endblock %}
+</body>
+</html>

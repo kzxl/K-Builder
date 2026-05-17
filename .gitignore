@@ -1,0 +1,8 @@
+/vendor/
+/node_modules/
+/apps/admin/node_modules/
+/storage/cache/
+/storage/logs/
+/public/assets/uploads/
+.env
+.DS_Store

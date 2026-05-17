@@ -1,0 +1,100 @@
+<section class="kb-section" style="padding: 4rem 1rem; background: var(--kb-bg);">
+    <div class="kb-container" style="max-width: 600px; margin: 0 auto; padding: 2rem; border-radius: var(--kb-radius); box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); background: white;">
+        
+        <h2 style="font-size: 1.875rem; font-weight: 700; color: var(--kb-text); margin-bottom: 0.5rem; text-align: center;">
+            {{ heading }}
+        </h2>
+        
+        {% if description %}
+        <p style="color: var(--kb-secondary); text-align: center; margin-bottom: 2rem;">
+            {{ description }}
+        </p>
+        {% endif %}
+
+        <form id="kb-contact-form" style="display: flex; flex-direction: column; gap: 1.25rem;">
+            <div>
+                <label style="display: block; font-size: 0.875rem; font-weight: 500; color: var(--kb-text); margin-bottom: 0.5rem;">Họ và Tên</label>
+                <input type="text" name="name" required style="width: 100%; padding: 0.75rem 1rem; border: 1px solid #E2E8F0; border-radius: var(--kb-radius); outline: none; transition: border-color 0.2s;" onfocus="this.style.borderColor='var(--kb-primary)'" onblur="this.style.borderColor='#E2E8F0'">
+            </div>
+            
+            <div>
+                <label style="display: block; font-size: 0.875rem; font-weight: 500; color: var(--kb-text); margin-bottom: 0.5rem;">Email</label>
+                <input type="email" name="email" required style="width: 100%; padding: 0.75rem 1rem; border: 1px solid #E2E8F0; border-radius: var(--kb-radius); outline: none; transition: border-color 0.2s;" onfocus="this.style.borderColor='var(--kb-primary)'" onblur="this.style.borderColor='#E2E8F0'">
+            </div>
+            
+            <div>
+                <label style="display: block; font-size: 0.875rem; font-weight: 500; color: var(--kb-text); margin-bottom: 0.5rem;">Số điện thoại</label>
+                <input type="tel" name="phone" style="width: 100%; padding: 0.75rem 1rem; border: 1px solid #E2E8F0; border-radius: var(--kb-radius); outline: none; transition: border-color 0.2s;" onfocus="this.style.borderColor='var(--kb-primary)'" onblur="this.style.borderColor='#E2E8F0'">
+            </div>
+            
+            <div>
+                <label style="display: block; font-size: 0.875rem; font-weight: 500; color: var(--kb-text); margin-bottom: 0.5rem;">Nội dung lời nhắn</label>
+                <textarea name="message" rows="4" required style="width: 100%; padding: 0.75rem 1rem; border: 1px solid #E2E8F0; border-radius: var(--kb-radius); outline: none; transition: border-color 0.2s; resize: vertical;" onfocus="this.style.borderColor='var(--kb-primary)'" onblur="this.style.borderColor='#E2E8F0'"></textarea>
+            </div>
+            
+            <div id="kb-contact-form-message" style="display: none; padding: 1rem; border-radius: var(--kb-radius); font-size: 0.875rem;"></div>
+
+            <button type="submit" id="kb-contact-form-btn" style="background: var(--kb-primary); color: white; padding: 0.75rem 1.5rem; font-weight: 600; border: none; border-radius: var(--kb-radius); cursor: pointer; transition: opacity 0.2s;" onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'">
+                {{ buttonText }}
+            </button>
+        </form>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('kb-contact-form');
+            const msgBox = document.getElementById('kb-contact-form-message');
+            const btn = document.getElementById('kb-contact-form-btn');
+            
+            if (!form) return;
+            
+            form.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                // Trạng thái đang gửi
+                btn.disabled = true;
+                btn.style.opacity = '0.7';
+                btn.innerText = 'Đang gửi...';
+                
+                const formData = new FormData(form);
+                const data = Object.fromEntries(formData.entries());
+                
+                // Xác định base_url từ global variable nếu có
+                const baseUrl = window.kbuilder_base_url || '';
+                
+                try {
+                    const res = await fetch(baseUrl + '{{ actionUrl }}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(data)
+                    });
+                    
+                    const result = await res.json();
+                    
+                    msgBox.style.display = 'block';
+                    if (res.ok && result.success) {
+                        msgBox.style.background = '#DEF7EC';
+                        msgBox.style.color = '#03543F';
+                        msgBox.innerText = result.message || 'Cảm ơn bạn! Lời nhắn đã được gửi thành công.';
+                        form.reset();
+                    } else {
+                        msgBox.style.background = '#FDE8E8';
+                        msgBox.style.color = '#9B1C1C';
+                        msgBox.innerText = result.error || 'Có lỗi xảy ra, vui lòng thử lại.';
+                    }
+                } catch (err) {
+                    msgBox.style.display = 'block';
+                    msgBox.style.background = '#FDE8E8';
+                    msgBox.style.color = '#9B1C1C';
+                    msgBox.innerText = 'Lỗi kết nối mạng, không thể gửi lời nhắn.';
+                } finally {
+                    btn.disabled = false;
+                    btn.style.opacity = '1';
+                    btn.innerText = '{{ buttonText }}';
+                }
+            });
+        });
+    </script>
+</section>

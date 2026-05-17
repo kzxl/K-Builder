@@ -1,0 +1,42 @@
+<section class="kb-section kb-hero-split">
+    <div class="kb-container" style="display: flex; flex-direction: {{ props.image_side == 'left' ? 'row-reverse' : 'row' }}; gap: 4rem; align-items: center; flex-wrap: wrap;">
+        <div style="flex: 1; min-width: 300px;">
+            <h1 class="kb-title" style="font-size: 3.5rem;">
+                {{ props.title }}
+            </h1>
+            
+            {% if props.subtitle %}
+            <p class="kb-subtitle">
+                {{ props.subtitle }}
+            </p>
+            {% endif %}
+            
+            {% if props.cta_text %}
+            <a href="{{ props.cta_url ?? '#' }}" class="kb-btn kb-btn--primary kb-btn--lg">
+                {{ props.cta_text }}
+            </a>
+            {% endif %}
+            
+            {% if props.badges and props.badges|length > 0 %}
+            <div style="display: flex; gap: 1rem; margin-top: 2rem; flex-wrap: wrap;">
+                {% for badge in props.badges %}
+                <div style="display: flex; align-items: center; gap: 0.5rem; color: var(--kb-text-muted);">
+                    <span>{{ badge.icon }}</span>
+                    <span>{{ badge.text }}</span>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+        
+        <div style="flex: 1; min-width: 300px;">
+            {% if props.image %}
+            <img src="{{ props.image }}" alt="{{ props.title }}" style="width: 100%; height: auto; border-radius: var(--kb-radius-lg); box-shadow: var(--kb-shadow-lg);">
+            {% else %}
+            <div style="width: 100%; height: 400px; background: hsla(221, 83%, 53%, 0.1); border-radius: var(--kb-radius-lg); display: flex; align-items: center; justify-content: center; color: var(--kb-primary);">
+                Hình ảnh (Split Hero)
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</section>

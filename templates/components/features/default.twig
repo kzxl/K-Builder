@@ -1,0 +1,27 @@
+<section class="kb-section kb-section--alt kb-features-block">
+    <div class="kb-container">
+        {% if props.title or props.subtitle %}
+        <div style="text-align: center; margin-bottom: 4rem;">
+            {% if props.title %}
+            <h2 class="kb-title">{{ props.title }}</h2>
+            {% endif %}
+            {% if props.subtitle %}
+            <p class="kb-subtitle" style="margin-left: auto; margin-right: auto;">{{ props.subtitle }}</p>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        {% set colsClass = 'kb-grid-' ~ (props.columns ?? 3) %}
+        <div class="kb-grid {{ colsClass }}">
+            {% for item in props.items %}
+            <div class="kb-feature-card" style="text-align: center;">
+                <div class="kb-feature-icon" style="margin-left: auto; margin-right: auto;">
+                    <i data-lucide="{{ item.icon ?? 'file-text' }}" style="width: 24px; height: 24px;"></i>
+                </div>
+                <h3 style="font-size: 1.25rem; font-weight: 600; margin-bottom: 1rem; color: var(--kb-text-main);">{{ item.title }}</h3>
+                <p style="color: var(--kb-text-muted); line-height: 1.6;">{{ item.description ?? item.excerpt ?? '' }}</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>

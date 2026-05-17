@@ -1,0 +1,53 @@
+<section class="kb-section kb-hero kb-hero--fullwidth"
+         style="
+            min-height: {{ props.min_height ?? '500px' }};
+            background-color: {{ props.bg_color ?? '#1e293b' }};
+            {% if props.bg_image %}
+            background-image: url('{{ props.bg_image }}');
+            background-size: cover;
+            background-position: center;
+            {% endif %}
+         "
+         aria-label="{{ props.title }}">
+
+    {% if props.bg_image %}
+    <div class="kb-hero__overlay" style="opacity: {{ (props.bg_overlay ?? 50) / 100 }}"></div>
+    {% endif %}
+
+    <div class="kb-container" style="position: relative; z-index: 2; height: 100%; display: flex; align-items: center; justify-content: center;">
+        <div class="kb-hero__content" style="text-align: {{ props.text_align ?? 'center' }}; color: #fff;">
+
+            <h1 class="kb-title" style="color: #fff; font-size: 3.5rem;">{{ props.title|e }}</h1>
+
+            {% if props.subtitle %}
+            <p class="kb-subtitle" style="color: rgba(255,255,255,0.8); margin: 0 auto 2rem;">{{ props.subtitle|e }}</p>
+            {% endif %}
+
+            {% if props.cta_text or props.cta2_text %}
+            <div class="kb-hero__ctas" style="display: flex; gap: 1rem; justify-content: {{ props.text_align == 'left' ? 'flex-start' : (props.text_align == 'right' ? 'flex-end' : 'center') }}; flex-wrap: wrap;">
+                {% if props.cta_text %}
+                <a href="{{ props.cta_url|default('#') }}"
+                   class="kb-btn kb-btn--lg kb-btn--{{ props.cta_style ?? 'primary' }}">
+                    {{ props.cta_text|e }}
+                </a>
+                {% endif %}
+
+                {% if props.cta2_text %}
+                <a href="{{ props.cta2_url|default('#') }}" class="kb-btn kb-btn--lg kb-btn--outline" style="border-color: rgba(255,255,255,0.3); color: #fff;">
+                    {{ props.cta2_text|e }}
+                </a>
+                {% endif %}
+            </div>
+            {% endif %}
+
+        </div>
+    </div>
+
+    {% if props.scroll_arrow %}
+    <div class="kb-hero__scroll-arrow" aria-hidden="true">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+            <path d="M12 5v14M5 12l7 7 7-7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+    </div>
+    {% endif %}
+</section>

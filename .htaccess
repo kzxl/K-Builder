@@ -1,0 +1,13 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Prevent directory listing
+    Options -Indexes
+
+    # Nếu người dùng truy cập trực tiếp file có thật (ngoại trừ public) thì không rewrite
+    # VD: /apps/admin/dist/... hoặc /plugins/...
+    RewriteCond %{REQUEST_FILENAME} !-f
+
+    # Đẩy tất cả request (kể cả folder không có index) vào thư mục public/index.php
+    RewriteRule ^(.*)$ public/index.php [QSA,L]
+</IfModule>

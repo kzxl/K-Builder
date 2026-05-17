@@ -1,0 +1,13 @@
+<section class="kb-section kb-text-block" style="padding: 3rem 0;">
+    <div class="kb-container">
+        <div class="kb-text-content" 
+             style="
+                 max-width: {{ props.max_width ?? '800px' }}; 
+                 margin: 0 auto; 
+                 text-align: {{ props.alignment ?? 'left' }};
+                 color: var(--kb-text-main);
+             ">
+            {{ props.content|raw }}
+        </div>
+    </div>
+</section>

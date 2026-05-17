@@ -1,0 +1,10 @@
+<section class="kb-section kb-button-block" style="padding: 1rem 0; text-align: {{ props.alignment ?? 'center' }};">
+    <div class="kb-container">
+        {% set btnClass = 'kb-btn--' ~ (props.style ?? 'primary') %}
+        {% set sizeClass = 'kb-btn--' ~ (props.size ?? 'md') %}
+        
+        <a href="{{ props.url ?? '#' }}" class="kb-btn {{ btnClass }} {{ sizeClass }}" style="display: inline-flex; text-decoration: none;">
+            {{ props.text ?? 'Button' }}
+        </a>
+    </div>
+</section>

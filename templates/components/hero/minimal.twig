@@ -1,0 +1,36 @@
+<section class="kb-section kb-hero-minimal" style="text-align: center; {% if props.bg_gradient %}background: linear-gradient(180deg, hsla(var(--kb-primary)/0.05) 0%, transparent 100%);{% endif %}">
+    <div class="kb-container" style="max-width: 800px;">
+        {% if props.badge_text %}
+        <div style="display: inline-block; padding: 0.4rem 1rem; border-radius: 9999px; background: hsla(221, 83%, 53%, 0.1); color: var(--kb-primary); font-size: 0.9rem; font-weight: 600; margin-bottom: 1.5rem;">
+            {{ props.badge_text }}
+        </div>
+        {% endif %}
+
+        <h1 class="kb-title" style="font-size: 4rem;">
+            {{ props.title }}
+            {% if props.highlight %}
+            <span class="kb-text-gradient">{{ props.highlight }}</span>
+            {% endif %}
+        </h1>
+
+        {% if props.subtitle %}
+        <p class="kb-subtitle" style="margin-left: auto; margin-right: auto;">
+            {{ props.subtitle }}
+        </p>
+        {% endif %}
+
+        <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+            {% if props.cta_text %}
+            <a href="{{ props.cta_url ?? '#' }}" class="kb-btn kb-btn--primary kb-btn--lg">
+                {{ props.cta_text }}
+            </a>
+            {% endif %}
+            
+            {% if props.cta2_text %}
+            <a href="{{ props.cta2_url ?? '#' }}" class="kb-btn kb-btn--outline kb-btn--lg">
+                {{ props.cta2_text }}
+            </a>
+            {% endif %}
+        </div>
+    </div>
+</section>

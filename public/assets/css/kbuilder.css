@@ -1,0 +1,283 @@
+/* KBuilder Frontend CSS Framework - Premium Modern SaaS Aesthetic */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+:root {
+    /* Color Palette - Default Light Mode */
+    --kb-primary: #2563EB;
+    --kb-primary-hover: #1D4ED8;
+    --kb-primary-glow: rgba(37, 99, 235, 0.4);
+    
+    --kb-secondary: #64748B;
+    --kb-accent: #F59E0B;
+    
+    --kb-bg: #FFFFFF;
+    --kb-bg-alt: #F8FAFC;
+    
+    --kb-text-main: #0F172A;
+    --kb-text-muted: #475569;
+    
+    /* Layout & Spacing */
+    --kb-container: 1200px;
+    --kb-radius-sm: 6px;
+    --kb-radius-md: 12px;
+    --kb-radius-lg: 20px;
+    
+    /* Shadows */
+    --kb-shadow-sm: 0 1px 3px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.1);
+    --kb-shadow-md: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -2px rgba(0,0,0,0.05);
+    --kb-shadow-lg: 0 10px 25px -3px rgba(0,0,0,0.05), 0 4px 6px -4px rgba(0,0,0,0.05);
+    --kb-shadow-glow: 0 0 24px var(--kb-primary-glow);
+}
+
+[data-theme="dark"] {
+    --kb-bg: #0B0F19;
+    --kb-bg-alt: #111827;
+    --kb-text-main: #F1F5F9;
+    --kb-text-muted: #94A3B8;
+    --kb-shadow-md: 0 4px 6px -1px rgba(0,0,0,0.4);
+}
+
+/* Reset & Typography */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    background-color: var(--kb-bg);
+    color: var(--kb-text-main);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* Layout Utilities */
+.kb-section {
+    padding: 5rem 0;
+    position: relative;
+    overflow: hidden;
+}
+
+.kb-section--alt {
+    background-color: var(--kb-bg-alt);
+}
+
+.kb-container {
+    width: 100%;
+    max-width: var(--kb-container);
+    margin: 0 auto;
+    padding: 0 1.5rem;
+}
+
+/* Header & Navigation */
+.kb-header {
+    background: var(--kb-bg);
+    border-bottom: 1px solid rgba(100, 116, 139, 0.1);
+    position: sticky;
+    top: 0;
+    z-index: 50;
+}
+
+.kb-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 80px;
+}
+
+.kb-nav__logo {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--kb-primary);
+    text-decoration: none;
+    letter-spacing: -0.02em;
+}
+
+.kb-nav-links {
+    list-style: none;
+    display: flex;
+    gap: 2.5rem;
+    align-items: center;
+    margin: 0;
+    padding: 0;
+}
+
+.kb-nav-links a {
+    text-decoration: none;
+    color: var(--kb-text-muted);
+    font-weight: 500;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    font-size: 0.95rem;
+}
+
+.kb-nav-links a:hover {
+    color: var(--kb-primary);
+}
+
+/* Footer */
+.kb-footer {
+    background: var(--kb-bg-alt);
+    border-top: 1px solid rgba(100, 116, 139, 0.1);
+    padding: 4rem 0;
+    margin-top: auto;
+}
+
+/* Glassmorphism & Gradients */
+.kb-glass {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+[data-theme="dark"] .kb-glass {
+    background: rgba(15, 23, 42, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* Typography Utilities */
+.kb-title {
+    font-size: 2.5rem;
+    font-weight: 800;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+    margin-bottom: 1rem;
+    color: var(--kb-text-main);
+}
+
+.kb-subtitle {
+    font-size: 1.125rem;
+    color: var(--kb-text-muted);
+    margin-bottom: 2rem;
+    max-width: 600px;
+}
+
+.kb-text-gradient {
+    background: linear-gradient(135deg, var(--kb-primary) 0%, #8B5CF6 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* Buttons (Modern Vercel/Stripe Style) */
+.kb-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    text-decoration: none;
+    border-radius: var(--kb-radius-sm);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+    border: none;
+    gap: 0.5rem;
+}
+
+.kb-btn:active {
+    transform: scale(0.97);
+}
+
+.kb-btn--sm { padding: 0.5rem 1rem; font-size: 0.875rem; }
+.kb-btn--md { padding: 0.75rem 1.5rem; font-size: 1rem; }
+.kb-btn--lg { padding: 1rem 2rem; font-size: 1.125rem; border-radius: var(--kb-radius-md); }
+
+/* Primary Button (Gradient + Glow) */
+.kb-btn--primary {
+    background: var(--kb-primary);
+    color: #ffffff;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.kb-btn--primary:hover {
+    background: var(--kb-primary-hover);
+    box-shadow: var(--kb-shadow-glow);
+    transform: translateY(-2px);
+    color: #ffffff;
+}
+
+/* Outline Button */
+.kb-btn--outline {
+    background: transparent;
+    color: var(--kb-text-main);
+    border: 1px solid rgba(100, 116, 139, 0.3);
+}
+
+.kb-btn--outline:hover {
+    background: var(--kb-bg-alt);
+    border-color: var(--kb-primary);
+    color: var(--kb-primary);
+    transform: translateY(-2px);
+}
+
+/* Ghost Button */
+.kb-btn--ghost {
+    background: transparent;
+    color: var(--kb-text-muted);
+}
+
+.kb-btn--ghost:hover {
+    background: rgba(100, 116, 139, 0.1);
+    color: var(--kb-text-main);
+}
+
+/* Accordion (FAQ) Customization */
+.kb-accordion {
+    border-bottom: 1px solid rgba(100, 116, 139, 0.2);
+}
+.kb-accordion summary {
+    font-weight: 600;
+    font-size: 1.125rem;
+    padding: 1.25rem 0;
+    cursor: pointer;
+    list-style: none;
+    position: relative;
+    color: var(--kb-text-main);
+    transition: color 0.2s;
+}
+.kb-accordion summary::-webkit-details-marker {
+    display: none;
+}
+.kb-accordion summary:hover {
+    color: var(--kb-primary);
+}
+.kb-accordion p {
+    color: var(--kb-text-muted);
+    padding-bottom: 1.25rem;
+    line-height: 1.7;
+}
+
+/* Features Grid */
+.kb-grid {
+    display: grid;
+    gap: 2rem;
+}
+.kb-grid-2 { grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+.kb-grid-3 { grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
+.kb-grid-4 { grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+
+/* Feature Card */
+.kb-feature-card {
+    background: var(--kb-bg);
+    padding: 2rem;
+    border-radius: var(--kb-radius-lg);
+    box-shadow: var(--kb-shadow-sm);
+    border: 1px solid rgba(100, 116, 139, 0.1);
+    transition: all 0.3s ease;
+}
+.kb-feature-card:hover {
+    box-shadow: var(--kb-shadow-md);
+    transform: translateY(-4px);
+    border-color: rgba(37, 99, 235, 0.2);
+}
+.kb-feature-icon {
+    width: 48px;
+    height: 48px;
+    background: rgba(37, 99, 235, 0.1);
+    color: var(--kb-primary);
+    border-radius: var(--kb-radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1.5rem;
+}

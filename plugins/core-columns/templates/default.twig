@@ -1,0 +1,36 @@
+<section class="kb-section kb-columns-block">
+    <div class="kb-container">
+        {% set layout = props.layout ?? '1-1' %}
+        {% set gap = props.gap ?? '2rem' %}
+        
+        <div style="display: grid; gap: {{ gap }}; 
+            grid-template-columns: 
+                {% if layout == '1-1' %}1fr 1fr
+                {% elseif layout == '1-2' %}1fr 2fr
+                {% elseif layout == '2-1' %}2fr 1fr
+                {% elseif layout == '1-1-1' %}1fr 1fr 1fr
+                {% elseif layout == '1-1-1-1' %}1fr 1fr 1fr 1fr
+                {% else %}1fr 1fr{% endif %};
+        ">
+            <div class="kb-col kb-col-1">
+                {{ render_children(props.col1_children) }}
+            </div>
+            
+            <div class="kb-col kb-col-2">
+                {{ render_children(props.col2_children) }}
+            </div>
+            
+            {% if layout in ['1-1-1', '1-1-1-1'] %}
+            <div class="kb-col kb-col-3">
+                {{ render_children(props.col3_children) }}
+            </div>
+            {% endif %}
+            
+            {% if layout == '1-1-1-1' %}
+            <div class="kb-col kb-col-4">
+                {{ render_children(props.col4_children) }}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</section>
