@@ -1,0 +1,31 @@
+<section class="kb-section kb-faq" style="padding: 5rem 0;">
+    <div class="kb-container" style="max-width: 800px; margin: 0 auto;">
+        
+        <h2 style="font-size: 2.5rem; font-weight: 800; text-align: center; margin-bottom: 3rem; color: var(--kb-text-main);">{{ title }}</h2>
+
+        <div style="display: flex; flex-direction: column; gap: 1rem;">
+            {% for idx, item in items %}
+            <details style="background: var(--kb-bg); border: 1px solid rgba(100, 116, 139, 0.2); border-radius: var(--kb-radius-md); padding: 1.5rem; cursor: pointer; transition: all 0.3s ease;">
+                <summary style="font-size: 1.125rem; font-weight: 600; color: var(--kb-text-main); list-style: none; display: flex; justify-content: space-between; align-items: center;">
+                    {{ item.question }}
+                    <span style="color: var(--kb-primary);">+</span>
+                </summary>
+                <div style="margin-top: 1rem; color: var(--kb-text-muted); line-height: 1.6; border-top: 1px solid rgba(100, 116, 139, 0.1); padding-top: 1rem;">
+                    {{ item.answer|raw }}
+                </div>
+            </details>
+            {% endfor %}
+        </div>
+        
+        <style>
+            .kb-faq details[open] summary span {
+                transform: rotate(45deg);
+                display: inline-block;
+                transition: transform 0.2s ease;
+            }
+            .kb-faq details summary span {
+                transition: transform 0.2s ease;
+            }
+        </style>
+    </div>
+</section>

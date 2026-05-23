@@ -1,0 +1,52 @@
+<section class="kb-hero-split" style="padding: 5rem 0;">
+    <div class="kb-container" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 4rem; align-items: center;">
+        
+        {% set textContent %}
+            <div class="kb-hero-split__content">
+                <h1 style="font-size: 3rem; font-weight: 800; line-height: 1.2; letter-spacing: -0.02em; margin-bottom: 1.5rem; color: var(--kb-text-main);">
+                    {{ title }}
+                </h1>
+                
+                {% if subtitle %}
+                    <div style="font-size: 1.125rem; color: var(--kb-text-muted); margin-bottom: 2rem; line-height: 1.6;">
+                        {{ subtitle|raw }}
+                    </div>
+                {% endif %}
+                
+                {% if cta_text and cta_url %}
+                    <a href="{{ cta_url }}" class="kb-btn kb-btn--lg kb-btn--primary" style="margin-bottom: 2rem;">
+                        {{ cta_text }}
+                    </a>
+                {% endif %}
+                
+                {% if badges and badges|length > 0 %}
+                    <div style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
+                        {% for badge in badges %}
+                            <div style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.875rem; color: var(--kb-text-muted);">
+                                {% if badge.icon %}<span style="color: var(--kb-primary);">{{ badge.icon }}</span>{% endif %}
+                                <span>{{ badge.text }}</span>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+        {% endset %}
+
+        {% set imageContent %}
+            {% if image %}
+                <div class="kb-hero-split__image" style="border-radius: var(--kb-radius-lg); overflow: hidden; box-shadow: var(--kb-shadow-lg);">
+                    <img src="{{ image starts with 'http' ? image : asset_url ~ image }}" alt="{{ title }}" style="width: 100%; height: auto; display: block;">
+                </div>
+            {% endif %}
+        {% endset %}
+
+        {% if image_side == 'left' %}
+            {{ imageContent }}
+            {{ textContent }}
+        {% else %}
+            {{ textContent }}
+            {{ imageContent }}
+        {% endif %}
+        
+    </div>
+</section>

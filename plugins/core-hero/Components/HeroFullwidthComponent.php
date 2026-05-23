@@ -16,22 +16,23 @@ class HeroFullwidthComponent extends AbstractComponent
     public function getSchema(): array
     {
         return [
-            'version' => '1.0',
-            'fields'  => [
-                'title'          => ['type' => 'text',     'label' => 'Tiêu đề chính',    'required' => true],
-                'subtitle'       => ['type' => 'textarea', 'label' => 'Phụ đề',           'required' => false],
-                'bg_image'       => ['type' => 'media',    'label' => 'Ảnh nền',          'accept' => 'image/*'],
-                'bg_color'       => ['type' => 'color',    'label' => 'Màu nền',          'default' => '#1e293b'],
-                'bg_overlay'     => ['type' => 'range',    'label' => 'Độ mờ overlay',    'min' => 0, 'max' => 100, 'default' => 50],
-                'text_align'     => ['type' => 'select',   'label' => 'Căn chữ',          'options' => ['left', 'center', 'right'], 'default' => 'center'],
-                'cta_text'       => ['type' => 'text',     'label' => 'Nút CTA',          'default' => 'Liên hệ ngay'],
-                'cta_url'        => ['type' => 'url',      'label' => 'Link CTA'],
-                'cta_style'      => ['type' => 'select',   'label' => 'Kiểu nút',         'options' => ['primary', 'outline', 'ghost'], 'default' => 'primary'],
-                'cta2_text'      => ['type' => 'text',     'label' => 'Nút CTA 2 (tùy chọn)'],
-                'cta2_url'       => ['type' => 'url',      'label' => 'Link CTA 2'],
-                'min_height'     => ['type' => 'select',   'label' => 'Chiều cao tối thiểu', 'options' => ['400px', '500px', '600px', '100vh'], 'default' => '500px'],
-                'scroll_arrow'   => ['type' => 'toggle',   'label' => 'Hiện mũi tên scroll', 'default' => false],
+            'type' => 'object',
+            'properties'  => [
+                'title'          => ['type' => 'string', 'title' => 'Tiêu đề chính'],
+                'subtitle'       => ['type' => 'string', 'format' => 'html', 'title' => 'Phụ đề'],
+                'bg_image'       => ['type' => 'string', 'format' => 'image', 'title' => 'Ảnh nền'],
+                'bg_color'       => ['type' => 'string', 'title' => 'Màu nền', 'default' => '#1e293b'],
+                'bg_overlay'     => ['type' => 'string', 'title' => 'Độ mờ overlay (0-100)', 'default' => '50'],
+                'text_align'     => ['type' => 'string', 'title' => 'Căn chữ', 'enum' => ['left', 'center', 'right'], 'default' => 'center'],
+                'cta_text'       => ['type' => 'string', 'title' => 'Nút CTA', 'default' => 'Liên hệ ngay'],
+                'cta_url'        => ['type' => 'string', 'title' => 'Link CTA'],
+                'cta_style'      => ['type' => 'string', 'title' => 'Kiểu nút', 'enum' => ['primary', 'outline', 'ghost'], 'default' => 'primary'],
+                'cta2_text'      => ['type' => 'string', 'title' => 'Nút CTA 2 (tùy chọn)'],
+                'cta2_url'       => ['type' => 'string', 'title' => 'Link CTA 2'],
+                'min_height'     => ['type' => 'string', 'title' => 'Chiều cao tối thiểu', 'enum' => ['400px', '500px', '600px', '100vh'], 'default' => '500px'],
+                'scroll_arrow'   => ['type' => 'boolean', 'title' => 'Hiện mũi tên scroll', 'default' => false],
             ],
+            'required' => ['title']
         ];
     }
 
@@ -41,7 +42,7 @@ class HeroFullwidthComponent extends AbstractComponent
             'title'      => 'Chào mừng đến với website',
             'subtitle'   => 'Mô tả ngắn về doanh nghiệp của bạn',
             'bg_color'   => '#1e293b',
-            'bg_overlay' => 50,
+            'bg_overlay' => '50',
             'text_align' => 'center',
             'cta_text'   => 'Liên hệ ngay',
             'cta_url'    => '/contact',
@@ -53,6 +54,6 @@ class HeroFullwidthComponent extends AbstractComponent
 
     public function getTemplate(): string
     {
-        return 'components/hero/fullwidth.twig';
+        return '@core-hero/fullwidth.twig';
     }
 }

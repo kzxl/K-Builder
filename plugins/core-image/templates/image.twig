@@ -1,0 +1,22 @@
+<div class="kbuilder-image-component {% if full_width %}kbuilder-image-fullwidth{% endif %}" style="margin: 2rem auto; text-align: center; {% if not full_width %}max-width: 100%;{% endif %}">
+    <figure style="margin: 0; padding: 0;">
+        <img 
+            src="{{ image_url starts with 'http' ? image_url : asset_url ~ image_url }}" 
+            alt="{{ alt_text|default('') }}" 
+            style="
+                max-width: 100%;
+                height: auto;
+                border-radius: {{ border_radius|default('0px') }};
+                {% if box_shadow %}box-shadow: var(--kb-shadow-lg);{% endif %}
+                display: block;
+                margin: 0 auto;
+                {% if full_width %}width: 100%;{% endif %}
+            "
+        >
+        {% if caption %}
+            <figcaption style="margin-top: 0.75rem; color: var(--kb-text-muted, #64748B); font-size: 0.875rem; font-style: italic;">
+                {{ caption }}
+            </figcaption>
+        {% endif %}
+    </figure>
+</div>

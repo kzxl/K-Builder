@@ -78,3 +78,13 @@ Bên trong Admin Dashboard:
 2. Truy cập menu **Cài đặt** -> Chuyển sang tab **Công cụ hệ thống**.
 3. Bấm vào nút **"Bắt đầu khởi tạo Demo"**.
 Hệ thống sẽ tự động tạo cấu trúc Trang chủ, Tin tức, Danh mục... giúp bạn trải nghiệm tính năng Builder ngay lập tức.
+
+## 🗺 Roadmap (Các tính năng cần hoàn thiện)
+Dưới đây là các hạng mục dự kiến sẽ tiếp tục được nâng cấp trong các phiên bản tiếp theo:
+
+- [ ] **Hệ thống Đa ngôn ngữ (i18n)**: Hỗ trợ dịch nội dung bài viết, trang và giao diện ra nhiều ngôn ngữ.
+- [ ] **Lịch sử chỉnh sửa (Revisions)**: Cải tiến Builder cho phép Undo/Redo và khôi phục các phiên bản cũ của Trang/Bài viết.
+- [ ] **Tối ưu SEO & Performance Frontend**: Tự động Minify CSS/JS cho giao diện người dùng cuối, Lazy-load ảnh.
+- [ ] **Trình quản lý Form (Form Builder)**: Khối Component kéo thả cho phép tạo Contact Form tùy chỉnh và lưu cấu hình vào hệ thống.
+- [ ] **Hệ thống Caching toàn diện**: Áp dụng Redis/Memcached mạnh mẽ cho việc Render View và Query Database.
+- [ ] **Theme Customizer mở rộng**: Cho phép tải lên cấu hình Typography, Palette màu nâng cao từ file định dạng chuẩn.

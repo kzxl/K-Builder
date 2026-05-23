@@ -30,7 +30,7 @@ class FaqComponent extends AbstractComponent
 
     public function getTemplate(): string
     {
-        return 'components/faq/default.twig';
+        return '@core-faq/default.twig';
     }
 
     public function getSchema(): array
@@ -55,7 +55,8 @@ class FaqComponent extends AbstractComponent
                                 'default' => 'Câu hỏi mẫu?'
                             ],
                             'answer' => [
-                                'type' => 'textarea',
+                                'type' => 'string',
+                                'format' => 'html',
                                 'title' => 'Câu trả lời',
                                 'default' => 'Trả lời chi tiết cho câu hỏi.'
                             ]

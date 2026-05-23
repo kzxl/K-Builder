@@ -35,7 +35,7 @@ class ImageComponent extends AbstractComponent
             'properties' => [
                 'image_url' => [
                     'type' => 'string',
-                    'format' => 'uri',
+                    'format' => 'image',
                     'title' => 'Đường dẫn ảnh'
                 ],
                 'alt_text' => [
@@ -55,9 +55,31 @@ class ImageComponent extends AbstractComponent
                     'type' => 'boolean',
                     'title' => 'Bóng đổ',
                     'default' => false
+                ],
+                'full_width' => [
+                    'type' => 'boolean',
+                    'title' => 'Tràn viền (Full width)',
+                    'default' => false
                 ]
             ],
-            'required' => ['image_url']
+            'required' => []
         ];
+    }
+
+    public function getDefaults(): array
+    {
+        return [
+            'image_url' => 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2564&auto=format&fit=crop',
+            'alt_text' => 'Ảnh mô tả',
+            'caption' => '',
+            'border_radius' => '8px',
+            'box_shadow' => false,
+            'full_width' => false
+        ];
+    }
+
+    public function getTemplate(): string
+    {
+        return '@core-image/image.twig';
     }
 }

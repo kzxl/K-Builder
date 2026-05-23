@@ -16,18 +16,19 @@ class HeroMinimalComponent extends AbstractComponent
     public function getSchema(): array
     {
         return [
-            'version' => '1.0',
-            'fields'  => [
-                'badge_text'   => ['type' => 'text',   'label' => 'Badge text (tùy chọn)'],
-                'title'        => ['type' => 'text',   'label' => 'Tiêu đề', 'required' => true],
-                'highlight'    => ['type' => 'text',   'label' => 'Từ nổi bật (highlight màu)'],
-                'subtitle'     => ['type' => 'textarea', 'label' => 'Phụ đề'],
-                'cta_text'     => ['type' => 'text',   'label' => 'Nút chính'],
-                'cta_url'      => ['type' => 'url',    'label' => 'Link nút chính'],
-                'cta2_text'    => ['type' => 'text',   'label' => 'Nút phụ'],
-                'cta2_url'     => ['type' => 'url',    'label' => 'Link nút phụ'],
-                'bg_gradient'  => ['type' => 'toggle', 'label' => 'Nền gradient', 'default' => true],
+            'type' => 'object',
+            'properties' => [
+                'badge_text'   => ['type' => 'string', 'title' => 'Badge text (tùy chọn)'],
+                'title'        => ['type' => 'string', 'title' => 'Tiêu đề'],
+                'highlight'    => ['type' => 'string', 'title' => 'Từ nổi bật (highlight màu)'],
+                'subtitle'     => ['type' => 'string', 'format' => 'html', 'title' => 'Phụ đề'],
+                'cta_text'     => ['type' => 'string', 'title' => 'Nút chính'],
+                'cta_url'      => ['type' => 'string', 'title' => 'Link nút chính'],
+                'cta2_text'    => ['type' => 'string', 'title' => 'Nút phụ'],
+                'cta2_url'     => ['type' => 'string', 'title' => 'Link nút phụ'],
+                'bg_gradient'  => ['type' => 'boolean', 'title' => 'Nền gradient', 'default' => true],
             ],
+            'required' => ['title']
         ];
     }
 
@@ -46,5 +47,5 @@ class HeroMinimalComponent extends AbstractComponent
         ];
     }
 
-    public function getTemplate(): string { return 'components/hero/minimal.twig'; }
+    public function getTemplate(): string { return '@core-hero/minimal.twig'; }
 }

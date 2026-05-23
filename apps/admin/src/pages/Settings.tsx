@@ -5,7 +5,7 @@ import api from '../lib/api';
 export default function Settings() {
   const [activeTab, setActiveTab] = useState('general');
   const [saving, setSaving] = useState(false);
-  const [themeVars, setThemeVars] = useState({
+  const [themeVars, setThemeVars] = useState<Record<string, string>>({
     primary: '#2563EB',
     border_radius: '12px'
   });
@@ -59,6 +59,14 @@ export default function Settings() {
               onClick={() => setActiveTab('general')}
             >
               <Globe size={18} /> Cài đặt chung
+            </button>
+
+            <button 
+              className={`kb-btn ${activeTab === 'appearance' ? 'kb-btn--primary' : 'kb-btn--outline'}`} 
+              style={{ justifyContent: 'flex-start', border: activeTab === 'appearance' ? '' : 'none', color: activeTab === 'appearance' ? '' : 'hsl(var(--color-text-muted))' }}
+              onClick={() => setActiveTab('appearance')}
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg> Giao diện (Theme)
             </button>
 
             <button 
@@ -118,6 +126,60 @@ export default function Settings() {
                       <option value="d/m/Y">17/05/2026 (d/m/Y)</option>
                       <option value="Y-m-d">2026-05-17 (Y-m-d)</option>
                     </select>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'appearance' && (
+              <div className="animate-fade-in" style={{ animationDuration: '0.2s' }}>
+                <h3 style={{ fontSize: '1.25rem', marginBottom: '1.5rem', paddingBottom: '1rem', borderBottom: '1px solid hsl(var(--color-border))' }}>Cấu hình Giao diện (Theme)</h3>
+                
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                  <div className="kb-form-group">
+                    <label className="kb-label">Màu chủ đạo (Primary Color)</label>
+                    <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                      <input 
+                        type="color" 
+                        value={themeVars.primary || '#2563EB'} 
+                        onChange={(e) => setThemeVars({...themeVars, primary: e.target.value})}
+                        style={{ width: '40px', height: '40px', padding: '0', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
+                      />
+                      <input 
+                        type="text" 
+                        className="kb-input" 
+                        value={themeVars.primary || '#2563EB'} 
+                        onChange={(e) => setThemeVars({...themeVars, primary: e.target.value})}
+                        style={{ width: '120px' }}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="kb-form-group">
+                    <label className="kb-label">Độ bo góc mặc định (Border Radius)</label>
+                    <select 
+                      className="kb-input" 
+                      value={themeVars.border_radius || '8px'}
+                      onChange={(e) => setThemeVars({...themeVars, border_radius: e.target.value})}
+                    >
+                      <option value="0px">Vuông vức (0px)</option>
+                      <option value="4px">Bo nhẹ (4px)</option>
+                      <option value="8px">Bo vừa (8px)</option>
+                      <option value="12px">Bo tròn (12px)</option>
+                      <option value="20px">Tròn góc lớn (20px)</option>
+                    </select>
+                  </div>
+                  
+                  <div className="kb-form-group">
+                    <label className="kb-label">Custom CSS</label>
+                    <textarea 
+                      className="kb-input" 
+                      rows={6}
+                      value={(themeVars as any).custom_css || ''}
+                      onChange={(e) => setThemeVars({...themeVars, custom_css: e.target.value})}
+                      placeholder="/* Nhập CSS tùy chỉnh ở đây... */"
+                      style={{ fontFamily: 'monospace', fontSize: '0.85rem' }}
+                    />
                   </div>
                 </div>
               </div>
@@ -230,7 +292,7 @@ export default function Settings() {
               </div>
             )}
 
-            {activeTab !== 'general' && activeTab !== 'tools' && (
+            {activeTab !== 'general' && activeTab !== 'appearance' && activeTab !== 'tools' && (
               <div className="animate-fade-in" style={{ animationDuration: '0.2s', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '300px' }}>
                 <Lock size={48} style={{ color: 'hsl(var(--color-text-muted))', opacity: 0.3, marginBottom: '1rem' }} />
                 <h3 style={{ color: 'hsl(var(--color-text-muted))' }}>Chức năng đang được phát triển</h3>

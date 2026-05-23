@@ -30,14 +30,13 @@ class FeaturesComponent extends AbstractComponent
 
     public function getTemplate(): string
     {
-        return 'components/features/default.twig';
+        return '@core-features/default.twig';
     }
 
     public function getSchema(): array
     {
         return [
             'type' => 'object',
-            'supports_dynamic_data' => true,
             'properties' => [
                 'title' => [
                     'type' => 'string',
@@ -45,12 +44,13 @@ class FeaturesComponent extends AbstractComponent
                     'default' => 'Tính năng nổi bật'
                 ],
                 'subtitle' => [
-                    'type' => 'textarea',
+                    'type' => 'string',
+                    'format' => 'html',
                     'title' => 'Mô tả ngắn',
                     'default' => 'Khám phá những điểm mạnh của chúng tôi.'
                 ],
                 'columns' => [
-                    'type' => 'select',
+                    'type' => 'string',
                     'title' => 'Số cột',
                     'enum' => ['2', '3', '4'],
                     'default' => '3'
@@ -72,7 +72,7 @@ class FeaturesComponent extends AbstractComponent
                                 'default' => 'Tính năng 1'
                             ],
                             'description' => [
-                                'type' => 'textarea',
+                                'type' => 'string',
                                 'title' => 'Mô tả',
                                 'default' => 'Mô tả chi tiết về tính năng này.'
                             ]

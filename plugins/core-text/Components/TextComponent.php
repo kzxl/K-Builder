@@ -15,7 +15,7 @@ class TextComponent extends AbstractComponent
 
     public function getTemplate(): string
     {
-        return 'components/text/default.twig';
+        return '@core-text/text.twig';
     }
 
     public function getLabel(): string

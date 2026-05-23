@@ -93,7 +93,9 @@ class Router
 
             // Plugins
             $g->get('/plugins', [PluginController::class, 'index']);
-            $g->post('/plugins/{id}/toggle', [PluginController::class, 'toggle']);
+            $g->post('/plugins/install', [PluginController::class, 'install']);
+            $g->post('/plugins/{slug}/toggle', [PluginController::class, 'toggle']);
+            $g->delete('/plugins/{slug}', [PluginController::class, 'delete']);
 
             // Settings & Tools
             $g->get('/settings/{group}', [SettingsController::class, 'getGroup']);

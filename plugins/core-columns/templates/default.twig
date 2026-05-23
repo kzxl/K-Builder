@@ -1,7 +1,7 @@
 <section class="kb-section kb-columns-block">
     <div class="kb-container">
-        {% set layout = props.layout ?? '1-1' %}
-        {% set gap = props.gap ?? '2rem' %}
+        {% set layout = layout ?? '1-1' %}
+        {% set gap = gap ?? '2rem' %}
         
         <div style="display: grid; gap: {{ gap }}; 
             grid-template-columns: 
@@ -13,22 +13,22 @@
                 {% else %}1fr 1fr{% endif %};
         ">
             <div class="kb-col kb-col-1">
-                {{ render_children(props.col1_children) }}
+                {{ render_children(col1_children) }}
             </div>
             
             <div class="kb-col kb-col-2">
-                {{ render_children(props.col2_children) }}
+                {{ render_children(col2_children) }}
             </div>
             
             {% if layout in ['1-1-1', '1-1-1-1'] %}
             <div class="kb-col kb-col-3">
-                {{ render_children(props.col3_children) }}
+                {{ render_children(col3_children) }}
             </div>
             {% endif %}
             
             {% if layout == '1-1-1-1' %}
             <div class="kb-col kb-col-4">
-                {{ render_children(props.col4_children) }}
+                {{ render_children(col4_children) }}
             </div>
             {% endif %}
         </div>

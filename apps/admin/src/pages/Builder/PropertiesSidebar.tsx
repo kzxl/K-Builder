@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { ArrowLeft, Settings2, Trash2, Plus } from 'lucide-react';
+import { ArrowLeft, Settings2, Trash2, Plus, Image as ImageIcon, Link as LinkIcon } from 'lucide-react';
+import MediaPickerModal from '../../components/Media/MediaPickerModal';
 
 interface PropertiesSidebarProps {
   section: any | null;
@@ -33,6 +34,9 @@ const getNestedValue = (obj: any, path: string[]) => {
 export default function PropertiesSidebar({ section, schema, components, onChange }: PropertiesSidebarProps) {
   const [localProps, setLocalProps] = useState<any>({});
   
+  // Media Picker state
+  const [activeMediaKey, setActiveMediaKey] = useState<string | null>(null);
+
   // Drill-down stack
   // Each level stores: path (relative to root props), schema, title
   const [stack, setStack] = useState<{ path: string[], schema: any, title: string }[]>([]);
@@ -122,6 +126,40 @@ export default function PropertiesSidebar({ section, schema, components, onChang
         <div style={{ position: 'relative' }}>
           <textarea className="kb-input" value={value} onChange={(e) => handleLocalChange(key, e.target.value)} rows={6} style={{ resize: 'vertical', fontFamily: 'monospace', fontSize: '0.85rem', lineHeight: 1.5, background: 'hsl(220 30% 98%)' }} placeholder="Nhập mã HTML..." />
           <div style={{ position: 'absolute', top: '-1.5rem', right: '0', fontSize: '0.7rem', color: 'hsl(var(--color-primary))', fontWeight: 600, background: 'hsla(var(--color-primary)/0.1)', padding: '2px 6px', borderRadius: '4px' }}>HTML</div>
+        </div>
+      );
+    }
+    // 2.5 Image Picker
+    if (propDef.type === 'string' && propDef.format === 'image') {
+      return (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+          {value && value.startsWith('http') ? (
+            <div style={{ height: '120px', borderRadius: 'var(--radius-md)', overflow: 'hidden', border: '1px solid hsl(var(--color-border))', position: 'relative' }}>
+              <img src={value} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              <button onClick={() => handleLocalChange(key, '')} style={{ position: 'absolute', top: '0.5rem', right: '0.5rem', background: 'rgba(0,0,0,0.5)', color: 'white', border: 'none', borderRadius: '50%', width: '24px', height: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}><Trash2 size={14} /></button>
+            </div>
+          ) : value ? (
+            <div style={{ height: '120px', borderRadius: 'var(--radius-md)', overflow: 'hidden', border: '1px solid hsl(var(--color-border))', position: 'relative' }}>
+              <img src={`/kbuilder${value}`} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              <button onClick={() => handleLocalChange(key, '')} style={{ position: 'absolute', top: '0.5rem', right: '0.5rem', background: 'rgba(0,0,0,0.5)', color: 'white', border: 'none', borderRadius: '50%', width: '24px', height: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}><Trash2 size={14} /></button>
+            </div>
+          ) : (
+            <div style={{ height: '80px', borderRadius: 'var(--radius-md)', border: '2px dashed hsl(var(--color-border))', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'hsl(var(--color-text-muted))', fontSize: '0.8rem' }}>
+              Chưa có ảnh
+            </div>
+          )}
+          
+          <div style={{ display: 'flex', gap: '0.5rem' }}>
+            <button className="kb-btn kb-btn--primary" style={{ flex: 1, padding: '0.4rem', fontSize: '0.8rem' }} onClick={() => setActiveMediaKey(key)}>
+              <ImageIcon size={14} /> Chọn ảnh hệ thống
+            </button>
+            <button className="kb-btn kb-btn--outline" style={{ padding: '0.4rem', fontSize: '0.8rem', background: 'white' }} onClick={() => {
+              const url = prompt('Nhập URL ảnh bên ngoài:', value);
+              if (url !== null) handleLocalChange(key, url);
+            }} title="Dùng URL ngoài">
+              <LinkIcon size={14} />
+            </button>
+          </div>
         </div>
       );
     }
@@ -250,6 +288,17 @@ export default function PropertiesSidebar({ section, schema, components, onChang
           );
         })}
       </div>
+      
+      <MediaPickerModal 
+        isOpen={!!activeMediaKey} 
+        onClose={() => setActiveMediaKey(null)}
+        onSelect={(media) => {
+          if (activeMediaKey) {
+            handleLocalChange(activeMediaKey, media.url);
+          }
+        }}
+        allowedTypes={['image']}
+      />
     </div>
   );
 }

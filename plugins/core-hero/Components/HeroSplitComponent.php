@@ -16,19 +16,27 @@ class HeroSplitComponent extends AbstractComponent
     public function getSchema(): array
     {
         return [
-            'version' => '1.0',
-            'fields'  => [
-                'title'       => ['type' => 'text',     'label' => 'Tiêu đề', 'required' => true],
-                'subtitle'    => ['type' => 'textarea', 'label' => 'Mô tả'],
-                'image'       => ['type' => 'media',    'label' => 'Ảnh', 'accept' => 'image/*'],
-                'image_side'  => ['type' => 'select',   'label' => 'Vị trí ảnh', 'options' => ['left', 'right'], 'default' => 'right'],
-                'cta_text'    => ['type' => 'text',     'label' => 'Nút CTA'],
-                'cta_url'     => ['type' => 'url',      'label' => 'Link CTA'],
-                'badges'      => ['type' => 'repeater', 'label' => 'Badges', 'fields' => [
-                    'text' => ['type' => 'text', 'label' => 'Text'],
-                    'icon' => ['type' => 'text', 'label' => 'Icon/emoji'],
-                ]],
+            'type' => 'object',
+            'properties'  => [
+                'title'       => ['type' => 'string', 'title' => 'Tiêu đề'],
+                'subtitle'    => ['type' => 'string', 'format' => 'html', 'title' => 'Mô tả'],
+                'image'       => ['type' => 'string', 'format' => 'image', 'title' => 'Ảnh nền'],
+                'image_side'  => ['type' => 'string', 'title' => 'Vị trí ảnh', 'enum' => ['left', 'right'], 'default' => 'right'],
+                'cta_text'    => ['type' => 'string', 'title' => 'Nút CTA'],
+                'cta_url'     => ['type' => 'string', 'title' => 'Link CTA'],
+                'badges'      => [
+                    'type' => 'array', 
+                    'title' => 'Badges', 
+                    'items' => [
+                        'type' => 'object',
+                        'properties' => [
+                            'text' => ['type' => 'string', 'title' => 'Text'],
+                            'icon' => ['type' => 'string', 'title' => 'Icon/emoji'],
+                        ]
+                    ]
+                ],
             ],
+            'required' => ['title']
         ];
     }
 
@@ -43,5 +51,5 @@ class HeroSplitComponent extends AbstractComponent
         ];
     }
 
-    public function getTemplate(): string { return 'components/hero/split.twig'; }
+    public function getTemplate(): string { return '@core-hero/split.twig'; }
 }

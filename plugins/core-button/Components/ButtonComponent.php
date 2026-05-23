@@ -30,7 +30,7 @@ class ButtonComponent extends AbstractComponent
 
     public function getTemplate(): string
     {
-        return 'components/button/default.twig';
+        return '@core-button/button.twig';
     }
 
     public function getSchema(): array

@@ -45,7 +45,8 @@ class HeroComponent extends AbstractComponent
                 ],
                 'bg_image' => [
                     'type' => 'string',
-                    'title' => 'Ảnh nền (URL)',
+                    'title' => 'Ảnh nền',
+                    'format' => 'image',
                     'default' => 'https://images.unsplash.com/photo-1557683316-973673baf926?auto=format&fit=crop&q=80&w=2000'
                 ],
                 'button_text' => [

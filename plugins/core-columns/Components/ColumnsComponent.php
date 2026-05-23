@@ -30,7 +30,7 @@ class ColumnsComponent extends AbstractComponent
 
     public function getTemplate(): string
     {
-        return 'plugins/core-columns/templates/default.twig';
+        return '@core-columns/default.twig';
     }
 
     public function getSchema(): array
@@ -39,13 +39,13 @@ class ColumnsComponent extends AbstractComponent
             'type' => 'object',
             'properties' => [
                 'layout' => [
-                    'type' => 'select',
+                    'type' => 'string',
                     'title' => 'Bố cục cột',
                     'enum' => ['1-1', '1-2', '2-1', '1-1-1', '1-1-1-1'],
                     'default' => '1-1'
                 ],
                 'gap' => [
-                    'type' => 'select',
+                    'type' => 'string',
                     'title' => 'Khoảng cách (Gap)',
                     'enum' => ['0', '1rem', '2rem', '3rem'],
                     'default' => '2rem'

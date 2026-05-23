@@ -1,0 +1,38 @@
+<section class="kb-hero-minimal" style="padding: 6rem 0; text-align: center; {% if bg_gradient %}background: linear-gradient(135deg, rgba(37,99,235,0.05) 0%, rgba(139,92,246,0.05) 100%);{% endif %}">
+    <div class="kb-container" style="max-width: 800px;">
+        {% if badge_text %}
+            <div style="display: inline-block; padding: 0.25rem 0.75rem; background: rgba(37,99,235,0.1); color: var(--kb-primary); border-radius: 9999px; font-size: 0.875rem; font-weight: 600; margin-bottom: 1.5rem;">
+                {{ badge_text }}
+            </div>
+        {% endif %}
+        
+        <h1 style="font-size: 3.5rem; font-weight: 800; line-height: 1.2; letter-spacing: -0.02em; margin-bottom: 1.5rem; color: var(--kb-text-main);">
+            {{ title }}
+            {% if highlight %}
+                <span style="background: linear-gradient(135deg, var(--kb-primary) 0%, #8b5cf6 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+                    {{ highlight }}
+                </span>
+            {% endif %}
+        </h1>
+        
+        {% if subtitle %}
+            <div style="font-size: 1.25rem; color: var(--kb-text-muted); margin-bottom: 2.5rem; line-height: 1.6;">
+                {{ subtitle|raw }}
+            </div>
+        {% endif %}
+        
+        <div style="display: flex; gap: 1rem; justify-content: center; align-items: center;">
+            {% if cta_text and cta_url %}
+                <a href="{{ cta_url }}" class="kb-btn kb-btn--lg kb-btn--primary">
+                    {{ cta_text }}
+                </a>
+            {% endif %}
+            
+            {% if cta2_text and cta2_url %}
+                <a href="{{ cta2_url }}" class="kb-btn kb-btn--lg kb-btn--outline">
+                    {{ cta2_text }}
+                </a>
+            {% endif %}
+        </div>
+    </div>
+</section>
