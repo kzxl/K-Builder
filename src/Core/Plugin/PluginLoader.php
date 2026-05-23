@@ -7,8 +7,10 @@ namespace KBuilder\Core\Plugin;
 use KBuilder\Core\Hook\HookSystem;
 use KBuilder\Core\Component\ComponentRegistry;
 use KBuilder\Core\Admin\AdminMenuRegistry;
+use KBuilder\Core\Content\ContentTypeRegistry;
 use Psr\Log\LoggerInterface;
 use Slim\App;
+use Illuminate\Database\Capsule\Manager as DB;
 
 /**
  * PluginLoader — Discover và khởi tạo tất cả plugin từ thư mục /plugins.
@@ -28,6 +30,7 @@ class PluginLoader
         private readonly PluginRegistry    $registry,
         private readonly HookSystem        $hooks,
         private readonly ComponentRegistry $components,
+        private readonly ContentTypeRegistry $contentTypes,
         private readonly AdminMenuRegistry $adminMenus,
         private readonly LoggerInterface   $logger,
         private readonly \Twig\Environment $twig
@@ -74,24 +77,61 @@ class PluginLoader
                 return;
             }
 
-            // Lifecycle
-            $plugin->boot($this->hooks);
-            $plugin->registerComponents($this->components);
-            $plugin->registerRoutes($app);
-            $plugin->registerAdminMenus($this->adminMenus);
-
+            // Luôn đăng ký vào memory registry để Admin UI hiển thị đầy đủ danh sách
             $this->registry->register($plugin);
 
-            // Tự động đăng ký Twig namespace nếu có thư mục templates/
-            $templatesDir = dirname($pluginFile) . '/templates';
-            if (is_dir($templatesDir)) {
-                $loader = $this->twig->getLoader();
-                if ($loader instanceof \Twig\Loader\FilesystemLoader) {
-                    $loader->addPath($templatesDir, $plugin->getId());
+            $slug = $plugin->getId();
+            
+            // Đọc trạng thái hoạt động trong CSDL
+            $dbPlugin = DB::table('plugins')->where('slug', $slug)->first();
+            $isActive = true;
+
+            if (!$dbPlugin) {
+                // Plugin mới phát hiện lần đầu: Tự động chạy install()
+                try {
+                    $plugin->install();
+                    $this->logger->info("Plugin installed successfully on auto-detect: {$slug}");
+                } catch (\Throwable $instErr) {
+                    $this->logger->error("Failed to install plugin on auto-detect: {$slug}", [
+                        'error' => $instErr->getMessage(),
+                    ]);
                 }
+
+                // Ghi nhận vào bảng plugins của DB với trạng thái active mặc định
+                DB::table('plugins')->insert([
+                    'slug'         => $slug,
+                    'name'         => $plugin->getName(),
+                    'version'      => $plugin->getVersion(),
+                    'is_active'    => true,
+                    'is_system'    => str_starts_with($slug, 'core-'),
+                    'installed_at' => date('Y-m-d H:i:s'),
+                    'updated_at'   => date('Y-m-d H:i:s'),
+                ]);
+            } else {
+                $isActive = (bool) $dbPlugin->is_active;
             }
 
-            $this->logger->debug("Plugin loaded: {$plugin->getId()} v{$plugin->getVersion()}");
+            // Chỉ kích hoạt chạy logic nếu plugin ở trạng thái hoạt động (active)
+            if ($isActive) {
+                $plugin->boot($this->hooks);
+                $plugin->registerComponents($this->components);
+                $plugin->registerContentTypes($this->contentTypes);
+                $plugin->registerRoutes($app);
+                $plugin->registerAdminMenus($this->adminMenus);
+
+                // Tự động đăng ký Twig namespace nếu có thư mục templates/
+                $templatesDir = dirname($pluginFile) . '/templates';
+                if (is_dir($templatesDir)) {
+                    $loader = $this->twig->getLoader();
+                    if ($loader instanceof \Twig\Loader\FilesystemLoader) {
+                        $loader->addPath($templatesDir, $slug);
+                    }
+                }
+
+                $this->logger->debug("Plugin loaded & activated: {$slug} v{$plugin->getVersion()}");
+            } else {
+                $this->logger->debug("Plugin detected but inactive (not loaded): {$slug}");
+            }
         } catch (\Throwable $e) {
             $this->logger->error("Failed to load plugin: {$pluginFile}", [
                 'error' => $e->getMessage(),

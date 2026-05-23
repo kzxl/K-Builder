@@ -6,16 +6,103 @@ namespace KBuilder\Plugins\KbContactManager;
 
 use KBuilder\Core\Plugin\AbstractPlugin;
 use KBuilder\Core\Hook\HookSystem;
+use KBuilder\Core\Admin\AdminMenuRegistry;
+use Illuminate\Database\Capsule\Manager as DB;
+use Illuminate\Database\Schema\Blueprint;
+use KBuilder\Http\Middleware\JwtMiddleware;
 use Slim\App;
 
 class Plugin extends AbstractPlugin
 {
-    public function getId(): string { return 'kb-contact-manager'; }
-    public function getName(): string { return 'Contact Manager'; }
-    public function getDescription(): string { return 'Thu thập và quản lý các lượt gửi Form liên hệ (Contact Submissions).'; }
+    public function getId(): string
+    {
+        return 'kb-contact-manager';
+    }
+
+    public function getName(): string
+    {
+        return 'Contact Manager (Quản lý liên hệ)';
+    }
+
+    public function getVersion(): string
+    {
+        return '1.0.0';
+    }
+
+    public function getDescription(): string
+    {
+        return 'Thu thập và quản lý các lượt gửi Form liên hệ (CRM).';
+    }
+
+    public function boot(HookSystem $hooks): void
+    {
+    }
+
+    public function install(): void
+    {
+        // Tự động kiểm tra và thêm các cột status, notes, priority vào bảng kb_form_submissions
+        if (DB::schema()->hasTable('kb_form_submissions')) {
+            DB::schema()->table('kb_form_submissions', function (Blueprint $table) {
+                if (!DB::schema()->hasColumn('kb_form_submissions', 'status')) {
+                    $table->string('status')->default('new');
+                }
+                if (!DB::schema()->hasColumn('kb_form_submissions', 'notes')) {
+                    $table->text('notes')->nullable();
+                }
+                if (!DB::schema()->hasColumn('kb_form_submissions', 'priority')) {
+                    $table->string('priority')->default('medium');
+                }
+            });
+        }
+    }
+
+    public function uninstall(): void
+    {
+        if (DB::schema()->hasTable('kb_form_submissions')) {
+            DB::schema()->table('kb_form_submissions', function (Blueprint $table) {
+                if (DB::schema()->hasColumn('kb_form_submissions', 'status')) {
+                    $table->dropColumn('status');
+                }
+                if (DB::schema()->hasColumn('kb_form_submissions', 'notes')) {
+                    $table->dropColumn('notes');
+                }
+                if (DB::schema()->hasColumn('kb_form_submissions', 'priority')) {
+                    $table->dropColumn('priority');
+                }
+            });
+        }
+    }
 
     public function registerRoutes(App $app): void
     {
-        // TODO: Đăng ký API nhận form liên hệ
+        require_once __DIR__ . '/Controllers/AdminContactController.php';
+
+        $container = $app->getContainer();
+        $jwt = $container->get(JwtMiddleware::class);
+
+        $app->group('/api/admin/contacts', function ($g) {
+            $g->get('', [\KBuilder\Plugins\KbContactManager\Controllers\AdminContactController::class, 'list']);
+            $g->get('/stats/summary', [\KBuilder\Plugins\KbContactManager\Controllers\AdminContactController::class, 'stats']);
+            $g->get('/{id}', [\KBuilder\Plugins\KbContactManager\Controllers\AdminContactController::class, 'get']);
+            $g->put('/{id}', [\KBuilder\Plugins\KbContactManager\Controllers\AdminContactController::class, 'update']);
+            $g->delete('/{id}', [\KBuilder\Plugins\KbContactManager\Controllers\AdminContactController::class, 'delete']);
+        })->add($jwt);
+    }
+
+    public function registerAdminMenus(AdminMenuRegistry $registry): void
+    {
+        $registry->add(
+            id: 'contacts',
+            label: 'Khách liên hệ',
+            icon: 'Mail',
+            route: '/contacts',
+            pluginId: $this->getId(),
+            order: 25
+        );
+    }
+
+    public function getDependencies(): array
+    {
+        return ['kb-contact-form'];
     }
 }

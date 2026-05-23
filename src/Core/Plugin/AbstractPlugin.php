@@ -7,6 +7,7 @@ namespace KBuilder\Core\Plugin;
 use KBuilder\Core\Hook\HookSystem;
 use KBuilder\Core\Component\ComponentRegistry;
 use KBuilder\Core\Admin\AdminMenuRegistry;
+use KBuilder\Core\Content\ContentTypeRegistry;
 use Slim\App;
 
 abstract class AbstractPlugin implements PluginInterface
@@ -38,6 +39,10 @@ abstract class AbstractPlugin implements PluginInterface
     {
     }
 
+    public function registerContentTypes(ContentTypeRegistry $registry): void
+    {
+    }
+
     public function registerRoutes(App $app): void
     {
     }
@@ -47,6 +52,19 @@ abstract class AbstractPlugin implements PluginInterface
     }
 
     public function getMigrations(): array
+    {
+        return [];
+    }
+
+    public function install(): void
+    {
+    }
+
+    public function uninstall(): void
+    {
+    }
+
+    public function getDependencies(): array
     {
         return [];
     }

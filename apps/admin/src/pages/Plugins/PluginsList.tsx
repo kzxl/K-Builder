@@ -1,5 +1,5 @@
-import { useState, useEffect, Fragment } from 'react';
-import { Settings, Check, X, ShieldAlert, BookOpen } from 'lucide-react';
+import { useState, useEffect, Fragment, useRef } from 'react';
+import { Settings, Check, X, ShieldAlert, BookOpen, Upload, Loader2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import api from '../../lib/api';
 
@@ -26,6 +26,8 @@ export default function PluginsList() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedPlugin, setSelectedPlugin] = useState<Plugin | null>(null);
   const [pagination, setPagination] = useState<PaginationData>({ page: 1, limit: 10, total: 0, totalPages: 1 });
+  const [installing, setInstalling] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const fetchPlugins = async (page: number = 1, query: string = searchQuery) => {
     setLoading(true);
@@ -58,9 +60,14 @@ export default function PluginsList() {
     try {
       setPlugins(plugins.map(p => p.id === id ? { ...p, is_active: !p.is_active } : p));
       await api.post(`/plugins/${id}/toggle`);
-    } catch (e) {
-      alert('Lỗi cập nhật trạng thái plugin');
-      fetchPlugins(pagination.page); // Revert on failure
+      // Đồng thời cập nhật selectedPlugin nếu đang hiển thị trong modal detail
+      if (selectedPlugin && selectedPlugin.id === id) {
+        setSelectedPlugin({ ...selectedPlugin, is_active: !selectedPlugin.is_active });
+      }
+    } catch (e: any) {
+      const errMsg = e.response?.data?.error || 'Lỗi cập nhật trạng thái plugin';
+      alert(errMsg);
+      fetchPlugins(pagination.page); // Revert lại UI
     }
   };
 
@@ -70,31 +77,77 @@ export default function PluginsList() {
         await api.delete(`/plugins/${id}`);
         fetchPlugins(pagination.page);
         if (selectedPlugin?.id === id) setSelectedPlugin(null);
-      } catch (e) {
-        alert('Lỗi khi xóa plugin!');
+      } catch (e: any) {
+        const errMsg = e.response?.data?.error || 'Lỗi khi xóa plugin!';
+        alert(errMsg);
       }
+    }
+  };
+
+  const handleInstallPlugin = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.name.endsWith('.zip')) {
+      alert('Vui lòng chọn file .zip hợp lệ');
+      return;
+    }
+
+    setInstalling(true);
+    const formData = new FormData();
+    formData.append('plugin_zip', file);
+
+    try {
+      const res = await api.post('/plugins/install', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      if (res.data.success) {
+        alert('Cài đặt Plugin thành công!');
+        fetchPlugins(1); // Reload list
+      }
+    } catch (err: any) {
+      alert(err.response?.data?.error || 'Lỗi khi cài đặt plugin');
+    } finally {
+      setInstalling(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
     }
   };
 
   return (
     <div className="animate-fade-in">
-      <div className="kb-page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <div className="kb-page-header" style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: '1rem' }}>
         <div>
           <h1 className="kb-page-title">Quản lý Plugins</h1>
           <p className="kb-page-subtitle">Quản lý và kích hoạt các tiện ích mở rộng của KBuilder</p>
         </div>
-        <div style={{ display: 'flex', gap: '1rem' }}>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', alignItems: 'center' }}>
           <input 
             type="text" 
             placeholder="Tìm kiếm plugin..." 
             className="kb-input" 
-            style={{ minWidth: '250px' }}
+            style={{ minWidth: '200px', flex: 1 }}
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
           />
-          <Link to="/plugins/docs" className="kb-btn kb-btn--outline" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <input 
+            type="file" 
+            accept=".zip" 
+            style={{ display: 'none' }} 
+            ref={fileInputRef}
+            onChange={handleInstallPlugin}
+          />
+          <button 
+            className="kb-btn kb-btn--primary" 
+            style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', whiteSpace: 'nowrap' }}
+            onClick={() => fileInputRef.current?.click()}
+            disabled={installing}
+          >
+            {installing ? <Loader2 size={18} className="animate-spin" /> : <Upload size={18} />}
+            {installing ? 'Đang cài đặt...' : 'Cài đặt Plugin'}
+          </button>
+          <Link to="/plugins/docs" className="kb-btn kb-btn--outline" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', whiteSpace: 'nowrap' }}>
             <BookOpen size={18} />
-            Hướng dẫn viết Plugin
+            Hướng dẫn
           </Link>
         </div>
       </div>

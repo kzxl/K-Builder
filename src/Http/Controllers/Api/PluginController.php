@@ -8,6 +8,8 @@ use KBuilder\Core\Plugin\PluginRegistry;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Illuminate\Database\Capsule\Manager as DB;
+use Psr\Http\Message\UploadedFileInterface;
+use ZipArchive;
 
 class PluginController
 {
@@ -99,6 +101,43 @@ class PluginController
         }
 
         $newState = !(bool)$dbPlugin->is_active;
+
+        // RÀNG BUỘC PHỤ THUỘC (DEPENDENCY GUARDS)
+        if ($newState === true) {
+            // Khi kích hoạt (Enable): Kiểm tra xem các plugin nó phụ thuộc đã bật chưa
+            $deps = method_exists($plugin, 'getDependencies') ? $plugin->getDependencies() : [];
+            foreach ($deps as $depSlug) {
+                $depPluginDb = DB::table('plugins')->where('slug', $depSlug)->first();
+                if (!$depPluginDb || !(bool)$depPluginDb->is_active) {
+                    $depObj = $this->registry->get($depSlug);
+                    $depName = $depObj ? $depObj->getName() : $depSlug;
+                    return $this->json($response, [
+                        'success' => false,
+                        'error' => "Không thể kích hoạt plugin này vì nó phụ thuộc vào plugin '$depName' hiện đang bị tắt."
+                    ], 400);
+                }
+            }
+        } else {
+            // Khi vô hiệu hóa (Disable): Kiểm tra xem có plugin active nào phụ thuộc vào plugin này không
+            $allPlugins = $this->registry->all();
+            $activePluginSlugs = DB::table('plugins')->where('is_active', true)->pluck('slug')->toArray();
+            
+            foreach ($allPlugins as $otherPlugin) {
+                $otherSlug = $otherPlugin->getId();
+                if ($otherSlug === $slug || !in_array($otherSlug, $activePluginSlugs, true)) {
+                    continue;
+                }
+                
+                $otherDeps = method_exists($otherPlugin, 'getDependencies') ? $otherPlugin->getDependencies() : [];
+                if (in_array($slug, $otherDeps, true)) {
+                    return $this->json($response, [
+                        'success' => false,
+                        'error' => "Không thể vô hiệu hóa plugin này vì plugin '{$otherPlugin->getName()}' đang hoạt động phụ thuộc vào nó."
+                    ], 400);
+                }
+            }
+        }
+
         DB::table('plugins')->where('slug', $slug)->update([
             'is_active'  => $newState,
             'updated_at' => date('Y-m-d H:i:s'),
@@ -116,6 +155,16 @@ class PluginController
             return $this->json($response, ['success' => false, 'error' => 'Không thể xóa System plugin'], 403);
         }
 
+        // DỌN DẸP TÀI NGUYÊN (UNINSTALL LIFE-CYCLE)
+        $plugin = $this->registry->get($slug);
+        if ($plugin) {
+            try {
+                $plugin->uninstall();
+            } catch (\Throwable $uninstErr) {
+                // Tiếp tục gỡ bỏ file dù uninstall gặp sự cố để tránh kẹt hệ thống
+            }
+        }
+
         $pluginDir = KB_ROOT . '/plugins/' . $slug;
         if (is_dir($pluginDir)) {
             $this->deleteDir($pluginDir);
@@ -124,6 +173,79 @@ class PluginController
         DB::table('plugins')->where('slug', $slug)->delete();
 
         return $this->json($response, ['success' => true, 'message' => 'Đã gỡ bỏ plugin']);
+    }
+
+    public function install(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
+    {
+        $uploadedFiles = $request->getUploadedFiles();
+        if (empty($uploadedFiles['plugin_zip'])) {
+            return $this->json($response, ['success' => false, 'error' => 'No zip file provided'], 400);
+        }
+
+        /** @var UploadedFileInterface $uploadedFile */
+        $uploadedFile = $uploadedFiles['plugin_zip'];
+        if ($uploadedFile->getError() !== UPLOAD_ERR_OK) {
+            return $this->json($response, ['success' => false, 'error' => 'Upload failed'], 400);
+        }
+
+        $extension = pathinfo($uploadedFile->getClientFilename(), PATHINFO_EXTENSION);
+        if (strtolower($extension) !== 'zip') {
+            return $this->json($response, ['success' => false, 'error' => 'Only .zip files are allowed'], 400);
+        }
+
+        $tempPath = KB_ROOT . '/storage/cache/' . uniqid('plugin_', true) . '.zip';
+        $uploadedFile->moveTo($tempPath);
+
+        $zip = new ZipArchive();
+        if ($zip->open($tempPath) === true) {
+            // Xác định slug của plugin từ tên thư mục gốc trong ZIP
+            $pluginSlug = null;
+            for ($i = 0; $i < $zip->numFiles; $i++) {
+                $stat = $zip->statIndex($i);
+                $path = $stat['name'];
+                
+                $parts = explode('/', trim($path, '/'));
+                if (count($parts) >= 1) {
+                    if ($pluginSlug === null) {
+                        $pluginSlug = $parts[0];
+                    } elseif ($pluginSlug !== $parts[0]) {
+                        $zip->close();
+                        unlink($tempPath);
+                        return $this->json($response, ['success' => false, 'error' => 'Invalid plugin ZIP structure. It must contain exactly one root directory.'], 400);
+                    }
+                }
+            }
+
+            if (!$pluginSlug) {
+                $zip->close();
+                unlink($tempPath);
+                return $this->json($response, ['success' => false, 'error' => 'Empty plugin ZIP'], 400);
+            }
+
+            // Kiểm tra xem plugin đã tồn tại chưa
+            $pluginDest = KB_ROOT . '/plugins/' . $pluginSlug;
+            if (is_dir($pluginDest)) {
+                $zip->close();
+                unlink($tempPath);
+                return $this->json($response, ['success' => false, 'error' => "Plugin '$pluginSlug' already exists"], 400);
+            }
+
+            // Giải nén vào thư mục plugins
+            $zip->extractTo(KB_ROOT . '/plugins/');
+            $zip->close();
+            unlink($tempPath);
+
+            // Xác minh file Plugin.php có tồn tại không
+            if (!file_exists($pluginDest . '/Plugin.php')) {
+                $this->deleteDir($pluginDest);
+                return $this->json($response, ['success' => false, 'error' => 'Missing Plugin.php in the plugin root directory'], 400);
+            }
+
+            return $this->json($response, ['success' => true, 'message' => 'Plugin installed successfully']);
+        }
+
+        @unlink($tempPath);
+        return $this->json($response, ['success' => false, 'error' => 'Failed to open the ZIP file'], 400);
     }
 
     private function deleteDir(string $dirPath): void

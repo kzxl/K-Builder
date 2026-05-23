@@ -7,6 +7,7 @@ namespace KBuilder\Core\Plugin;
 use KBuilder\Core\Hook\HookSystem;
 use KBuilder\Core\Component\ComponentRegistry;
 use KBuilder\Core\Admin\AdminMenuRegistry;
+use KBuilder\Core\Content\ContentTypeRegistry;
 use Slim\App;
 
 /**
@@ -59,6 +60,12 @@ interface PluginInterface
     public function registerComponents(ComponentRegistry $registry): void;
 
     /**
+     * Đăng ký Custom Post Types và Taxonomies.
+     * VD: product, product_cat
+     */
+    public function registerContentTypes(ContentTypeRegistry $registry): void;
+
+    /**
      * Đăng ký Slim routes (API endpoints) của plugin.
      * VD: GET /api/products, POST /api/products
      */
@@ -77,4 +84,20 @@ interface PluginInterface
      * @return string[] absolute paths to migration files
      */
     public function getMigrations(): array;
+
+    /**
+     * Chạy các tác vụ cài đặt một lần (ví dụ: tạo bảng CSDL).
+     */
+    public function install(): void;
+
+    /**
+     * Dọn dẹp tài nguyên khi gỡ bỏ plugin (ví dụ: xóa bảng CSDL).
+     */
+    public function uninstall(): void;
+
+    /**
+     * Trả về danh sách các slug của plugin phụ thuộc.
+     * @return string[]
+     */
+    public function getDependencies(): array;
 }

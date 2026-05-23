@@ -36,7 +36,10 @@ class Plugin extends AbstractPlugin
 
     public function boot(HookSystem $hooks): void
     {
-        // Tự động tạo bảng nếu chưa có khi plugin được nạp
+    }
+
+    public function install(): void
+    {
         if (!DB::schema()->hasTable('kb_form_submissions')) {
             DB::schema()->create('kb_form_submissions', function (Blueprint $table) {
                 $table->id();
@@ -50,6 +53,11 @@ class Plugin extends AbstractPlugin
         }
     }
 
+    public function uninstall(): void
+    {
+        DB::schema()->dropIfExists('kb_form_submissions');
+    }
+
     public function registerComponents(ComponentRegistry $registry): void
     {
         require_once __DIR__ . '/Components/ContactFormComponent.php';
@@ -61,17 +69,5 @@ class Plugin extends AbstractPlugin
         require_once __DIR__ . '/Controllers/ContactController.php';
         
         $app->post('/api/contact-form/submit', [\KBuilder\Plugins\KbContactForm\Controllers\ContactController::class, 'submit']);
-    }
-
-    public function registerAdminMenus(AdminMenuRegistry $registry): void
-    {
-        // (Tương lai) Thêm menu quản lý danh sách liên hệ vào sidebar React
-        $registry->addMenu([
-            'id' => 'kb-contact-form',
-            'label' => 'Khách liên hệ',
-            'icon' => 'Mail',
-            'path' => '/contacts', // React path
-            'roles' => ['admin', 'super_admin']
-        ]);
     }
 }
