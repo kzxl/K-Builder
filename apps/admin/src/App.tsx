@@ -18,6 +18,7 @@ import PluginDocs from './pages/Plugins/PluginDocs';
 import ThemeSettings from './pages/Plugins/ThemeSettings';
 import Analytics from './pages/Plugins/Analytics';
 import PluginPlaceholder from './pages/Plugins/PluginPlaceholder';
+import Contacts from './pages/Plugins/Contacts';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isInitializing } = useAuthStore();
@@ -79,6 +80,7 @@ export default function App() {
           <Route path="plugins/docs" element={<PluginDocs />} />
           <Route path="plugins/kb-theme-manager" element={<ThemeSettings />} />
           <Route path="plugins/kb-analytics" element={<Analytics />} />
+          <Route path="contacts" element={<Contacts />} />
           <Route path="plugins/:slug" element={<PluginPlaceholder />} />
         </Route>
       </Routes>
