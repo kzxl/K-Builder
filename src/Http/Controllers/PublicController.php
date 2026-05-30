@@ -127,9 +127,88 @@ class PublicController
 
     public function sitemap(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
-        // TODO: Generate sitemap XML
-        $response->getBody()->write('<?xml version="1.0" encoding="UTF-8"?><urlset></urlset>');
-        return $response->withHeader('Content-Type', 'text/xml');
+        $cacheKey = 'sitemap_xml';
+        $xml = $this->cache->get($cacheKey);
+
+        if ($xml === null) {
+            $base = rtrim($_ENV['APP_URL'] ?? '', '/');
+
+            $urls = [];
+
+            // Trang chủ
+            $urls[] = ['loc' => $base . '/', 'priority' => '1.0', 'changefreq' => 'daily'];
+
+            // Các trang đã publish
+            $pages = DB::table('pages')
+                ->where('status', 'published')
+                ->whereNull('deleted_at')
+                ->get(['slug', 'updated_at']);
+            foreach ($pages as $p) {
+                $urls[] = [
+                    'loc'        => $base . '/' . $p->slug,
+                    'lastmod'    => $p->updated_at ? date('Y-m-d', strtotime($p->updated_at)) : null,
+                    'priority'   => '0.8',
+                    'changefreq' => 'weekly',
+                ];
+            }
+
+            // Các bài viết đã publish
+            $posts = DB::table('posts')
+                ->where('status', 'published')
+                ->whereNull('deleted_at')
+                ->get(['slug', 'type', 'updated_at']);
+            foreach ($posts as $post) {
+                $urls[] = [
+                    'loc'        => $base . '/' . $post->slug,
+                    'lastmod'    => $post->updated_at ? date('Y-m-d', strtotime($post->updated_at)) : null,
+                    'priority'   => '0.6',
+                    'changefreq' => 'weekly',
+                ];
+            }
+
+            $xml = '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
+            $xml .= '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' . "\n";
+            foreach ($urls as $u) {
+                $xml .= '  <url>' . "\n";
+                $xml .= '    <loc>' . htmlspecialchars($u['loc'], ENT_XML1) . '</loc>' . "\n";
+                if (!empty($u['lastmod'])) {
+                    $xml .= '    <lastmod>' . $u['lastmod'] . '</lastmod>' . "\n";
+                }
+                $xml .= '    <changefreq>' . $u['changefreq'] . '</changefreq>' . "\n";
+                $xml .= '    <priority>' . $u['priority'] . '</priority>' . "\n";
+                $xml .= '  </url>' . "\n";
+            }
+            $xml .= '</urlset>';
+
+            $this->cache->set($cacheKey, $xml, 3600);
+        }
+
+        $response->getBody()->write($xml);
+        return $response->withHeader('Content-Type', 'application/xml; charset=UTF-8');
+    }
+
+    public function robots(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
+    {
+        $base = rtrim($_ENV['APP_URL'] ?? '', '/');
+
+        // Cho phép tùy biến qua site_settings (group seo, key robots_txt)
+        $custom = DB::table('site_settings')
+            ->where('group', 'seo')
+            ->where('key', 'robots_txt')
+            ->value('value');
+
+        if ($custom) {
+            $txt = $custom;
+        } else {
+            $txt = "User-agent: *\n";
+            $txt .= "Allow: /\n";
+            $txt .= "Disallow: /admin\n";
+            $txt .= "Disallow: /api/\n";
+            $txt .= "\nSitemap: {$base}/sitemap.xml\n";
+        }
+
+        $response->getBody()->write($txt);
+        return $response->withHeader('Content-Type', 'text/plain; charset=UTF-8');
     }
 
     /** Route để serve file tĩnh React Admin */

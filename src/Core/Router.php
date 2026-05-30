@@ -35,6 +35,7 @@ class Router
         // ── Public frontend routes ──────────────────────────────────────
         $app->get('/', [PublicController::class, 'home']);
         $app->get('/sitemap.xml', [PublicController::class, 'sitemap']);
+        $app->get('/robots.txt', [PublicController::class, 'robots']);
 
         // ── Auth ────────────────────────────────────────────────────────
         $app->group('/api', function (RouteCollectorProxy $api) {

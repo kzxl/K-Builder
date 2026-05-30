@@ -23,12 +23,13 @@ class PageController
         return $response->withHeader('Content-Type', 'application/json')->withStatus($status);
     }
 
-    /** Xóa cache HTML của một trang theo slug. */
+    /** Xóa cache HTML của một trang theo slug (kèm sitemap vì danh sách URL có thể đổi). */
     private function forgetPageCache(?string $slug): void
     {
         if ($slug) {
             $this->cache->delete('page_html:' . $slug);
         }
+        $this->cache->delete('sitemap_xml');
     }
 
     private function getSiteId(ServerRequestInterface $request): int
