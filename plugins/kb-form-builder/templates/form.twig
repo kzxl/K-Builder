@@ -1,0 +1,91 @@
+<section class="kb-section kb-form-section" style="padding: 4rem 1rem; background: var(--kb-bg);">
+    <div class="kb-container" style="max-width: 600px; margin: 0 auto; padding: 2rem; border-radius: var(--kb-radius); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06); background: #fff;">
+
+        <h2 style="font-size: 1.875rem; font-weight: 700; color: var(--kb-text); margin-bottom: 0.5rem; text-align: center;">
+            {{ heading }}
+        </h2>
+
+        {% if description %}
+        <p style="color: var(--kb-secondary); text-align: center; margin-bottom: 2rem;">{{ description }}</p>
+        {% endif %}
+
+        <form class="kb-dynamic-form" data-form-key="{{ form_key|default('default') }}" style="display:flex; flex-direction:column; gap:1.25rem;">
+            {% for field in fields %}
+            <div>
+                <label style="display:block; font-size:0.875rem; font-weight:500; color:var(--kb-text); margin-bottom:0.5rem;">
+                    {{ field.label }}{% if field.required %} <span style="color:#DC2626;">*</span>{% endif %}
+                </label>
+
+                {% if field.type == 'textarea' %}
+                    <textarea name="{{ field.name }}" rows="4" {% if field.required %}required{% endif %}
+                        placeholder="{{ field.placeholder }}"
+                        style="width:100%; padding:0.75rem 1rem; border:1px solid #E2E8F0; border-radius:var(--kb-radius); outline:none; resize:vertical;"></textarea>
+                {% elseif field.type == 'select' %}
+                    <select name="{{ field.name }}" {% if field.required %}required{% endif %}
+                        style="width:100%; padding:0.75rem 1rem; border:1px solid #E2E8F0; border-radius:var(--kb-radius); outline:none; background:#fff;">
+                        <option value="">— Chọn —</option>
+                        {% for opt in field.options|default('')|split(',') %}
+                            {% if opt|trim %}<option value="{{ opt|trim }}">{{ opt|trim }}</option>{% endif %}
+                        {% endfor %}
+                    </select>
+                {% else %}
+                    <input type="{{ field.type|default('text') }}" name="{{ field.name }}" {% if field.required %}required{% endif %}
+                        placeholder="{{ field.placeholder }}"
+                        style="width:100%; padding:0.75rem 1rem; border:1px solid #E2E8F0; border-radius:var(--kb-radius); outline:none;">
+                {% endif %}
+            </div>
+            {% endfor %}
+
+            <div class="kb-form-message" style="display:none; padding:1rem; border-radius:var(--kb-radius); font-size:0.875rem;"></div>
+
+            <button type="submit" class="kb-form-submit"
+                style="background:var(--kb-primary); color:#fff; padding:0.75rem 1.5rem; font-weight:600; border:none; border-radius:var(--kb-radius); cursor:pointer;">
+                {{ buttonText }}
+            </button>
+        </form>
+    </div>
+
+    <script>
+    (function() {
+        var section = document.currentScript.closest('.kb-form-section');
+        if (!section) return;
+        var form = section.querySelector('.kb-dynamic-form');
+        var msgBox = section.querySelector('.kb-form-message');
+        var btn = section.querySelector('.kb-form-submit');
+        var btnLabel = btn ? btn.innerText : 'Gửi';
+        if (!form) return;
+
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            btn.disabled = true; btn.style.opacity = '0.7'; btn.innerText = 'Đang gửi...';
+
+            var data = Object.fromEntries(new FormData(form).entries());
+            var baseUrl = window.kbuilder_base_url || '';
+
+            try {
+                var res = await fetch(baseUrl + '/api/forms/submit', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ form_key: form.dataset.formKey, fields: data })
+                });
+                var result = await res.json();
+                msgBox.style.display = 'block';
+                if (res.ok && result.success) {
+                    msgBox.style.background = '#DEF7EC'; msgBox.style.color = '#03543F';
+                    msgBox.innerText = result.message || 'Gửi thành công. Cảm ơn bạn!';
+                    form.reset();
+                } else {
+                    msgBox.style.background = '#FDE8E8'; msgBox.style.color = '#9B1C1C';
+                    msgBox.innerText = result.error || 'Có lỗi xảy ra, vui lòng thử lại.';
+                }
+            } catch (err) {
+                msgBox.style.display = 'block';
+                msgBox.style.background = '#FDE8E8'; msgBox.style.color = '#9B1C1C';
+                msgBox.innerText = 'Lỗi kết nối mạng.';
+            } finally {
+                btn.disabled = false; btn.style.opacity = '1'; btn.innerText = btnLabel;
+            }
+        });
+    })();
+    </script>
+</section>
