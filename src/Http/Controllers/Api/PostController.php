@@ -8,6 +8,8 @@ use Illuminate\Database\Capsule\Manager as DB;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use KBuilder\Core\Content\ContentTypeRegistry;
+use KBuilder\Http\Validation\Validator;
+use Respect\Validation\Validator as v;
 
 class PostController
 {
@@ -60,9 +62,10 @@ class PostController
         $authorId = (int) $request->getAttribute('auth_user_id');
         $body = $request->getParsedBody() ?? [];
 
-        if (empty($body['title']) || empty($body['slug'])) {
-            return $this->json($response, ['success' => false, 'error' => 'Title and slug are required'], 422);
-        }
+        Validator::validate($body, [
+            'title' => v::notEmpty()->stringType()->length(1, 255),
+            'slug'  => v::notEmpty()->slug(),
+        ]);
 
         $exists = DB::table('posts')
             ->where('site_id', $siteId)

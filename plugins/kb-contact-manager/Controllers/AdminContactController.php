@@ -8,6 +8,8 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Illuminate\Database\Capsule\Manager as DB;
 
+// Lưu ý: dùng tên bảng KHÔNG prefix ('form_submissions'); Capsule tự thêm 'kb_'.
+
 class AdminContactController
 {
     /**
@@ -33,7 +35,7 @@ class AdminContactController
         $status = trim($queryParams['status'] ?? '');
         $priority = trim($queryParams['priority'] ?? '');
         
-        $query = DB::table('kb_form_submissions');
+        $query = DB::table('form_submissions');
         
         // Tìm kiếm đa trường
         if (!empty($search)) {
@@ -85,7 +87,7 @@ class AdminContactController
     public function get(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
     {
         $id = (int) $args['id'];
-        $contact = DB::table('kb_form_submissions')->where('id', $id)->first();
+        $contact = DB::table('form_submissions')->where('id', $id)->first();
         
         if (!$contact) {
             return $this->json($response, [
@@ -96,7 +98,7 @@ class AdminContactController
         
         // Nếu liên hệ đang ở trạng thái 'new', tự động cập nhật thành 'read'
         if ($contact->status === 'new') {
-            DB::table('kb_form_submissions')
+            DB::table('form_submissions')
                 ->where('id', $id)
                 ->update([
                     'status' => 'read',
@@ -124,7 +126,7 @@ class AdminContactController
             $body = json_decode($raw, true);
         }
         
-        $contact = DB::table('kb_form_submissions')->where('id', $id)->first();
+        $contact = DB::table('form_submissions')->where('id', $id)->first();
         if (!$contact) {
             return $this->json($response, [
                 'success' => false,
@@ -154,7 +156,7 @@ class AdminContactController
         
         if (!empty($updateData)) {
             $updateData['updated_at'] = date('Y-m-d H:i:s');
-            DB::table('kb_form_submissions')->where('id', $id)->update($updateData);
+            DB::table('form_submissions')->where('id', $id)->update($updateData);
         }
         
         return $this->json($response, [
@@ -170,7 +172,7 @@ class AdminContactController
     public function delete(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
     {
         $id = (int) $args['id'];
-        $exists = DB::table('kb_form_submissions')->where('id', $id)->exists();
+        $exists = DB::table('form_submissions')->where('id', $id)->exists();
         
         if (!$exists) {
             return $this->json($response, [
@@ -179,7 +181,7 @@ class AdminContactController
             ], 404);
         }
         
-        DB::table('kb_form_submissions')->where('id', $id)->delete();
+        DB::table('form_submissions')->where('id', $id)->delete();
         
         return $this->json($response, [
             'success' => true,
@@ -194,14 +196,14 @@ class AdminContactController
     public function stats(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
         // 1. Đếm theo trạng thái
-        $statusCounts = DB::table('kb_form_submissions')
+        $statusCounts = DB::table('form_submissions')
             ->select('status', DB::raw('count(*) as total'))
             ->groupBy('status')
             ->pluck('total', 'status')
             ->toArray();
             
         $stats = [
-            'total' => DB::table('kb_form_submissions')->count(),
+            'total' => DB::table('form_submissions')->count(),
             'new' => $statusCounts['new'] ?? 0,
             'read' => $statusCounts['read'] ?? 0,
             'in_progress' => $statusCounts['in_progress'] ?? 0,
@@ -210,7 +212,7 @@ class AdminContactController
         ];
         
         // 2. Đếm theo mức độ ưu tiên
-        $priorityCounts = DB::table('kb_form_submissions')
+        $priorityCounts = DB::table('form_submissions')
             ->select('priority', DB::raw('count(*) as total'))
             ->groupBy('priority')
             ->pluck('total', 'priority')
@@ -226,7 +228,7 @@ class AdminContactController
         $chartData = [];
         for ($i = 6; $i >= 0; $i--) {
             $date = date('Y-m-d', strtotime("-{$i} days"));
-            $count = DB::table('kb_form_submissions')
+            $count = DB::table('form_submissions')
                 ->whereDate('created_at', $date)
                 ->count();
                 

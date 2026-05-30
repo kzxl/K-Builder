@@ -116,29 +116,58 @@ class InitialDataSeeder extends AbstractSeed
             ['site_id' => 1, 'user_id' => 1, 'role_id' => 1, 'created_at' => $now],
         ])->saveData();
 
-        // ── Register built-in plugins ──────────────────────────────────
-        $plugins = [
-            ['core-hero',      'Core Hero Sections',  '1.0.0', 'Hero section types'],
-            ['core-text',      'Core Text Sections',  '1.0.0', 'Text & content sections'],
-            ['core-image',     'Core Image Sections', '1.0.0', 'Image & gallery sections'],
-            ['core-blog',      'Core Blog',           '1.0.0', 'Post & category management'],
-            ['core-media',     'Core Media',          '1.0.0', 'Media library'],
-            ['core-seo',       'Core SEO',            '1.0.0', 'SEO tools'],
-            ['core-analytics', 'Core Analytics',      '1.0.0', 'Analytics tracker'],
-        ];
-        $pluginRows = [];
-        foreach ($plugins as [$slug, $name, $version, $desc]) {
-            $pluginRows[] = [
-                'slug'         => $slug,
-                'name'         => $name,
-                'version'      => $version,
-                'description'  => $desc,
-                'is_active'    => true,
-                'is_system'    => true,
-                'installed_at' => $now,
-            ];
+        // ── Map role → permissions ─────────────────────────────────────
+        // super_admin bỏ qua kiểm tra ở middleware nên không cần gán cứng,
+        // nhưng vẫn gán đầy đủ để dữ liệu nhất quán.
+        $roleMap = [];
+        foreach ($this->fetchAll('SELECT id, slug FROM kb_roles') as $r) {
+            $roleMap[$r['slug']] = (int) $r['id'];
         }
-        $this->table('kb_plugins')->insert($pluginRows)->saveData();
+        $permMap = [];
+        foreach ($this->fetchAll('SELECT id, slug FROM kb_permissions') as $p) {
+            $permMap[$p['slug']] = (int) $p['id'];
+        }
+
+        // Định nghĩa quyền theo từng vai trò
+        $allSlugs = array_keys($permMap);
+        $rolePermissions = [
+            'super_admin' => $allSlugs,
+            'admin'       => array_values(array_filter($allSlugs, fn ($s) =>
+                !str_starts_with($s, 'sites.') && !in_array($s, ['users.delete'], true)
+            )),
+            'editor'      => [
+                'pages.view', 'pages.create', 'pages.edit', 'pages.publish',
+                'posts.view', 'posts.create', 'posts.edit', 'posts.publish',
+                'media.view', 'media.upload',
+                'menus.view', 'menus.edit',
+                'analytics.view',
+            ],
+            'viewer'      => [
+                'pages.view', 'posts.view', 'media.view', 'menus.view', 'analytics.view',
+            ],
+        ];
+
+        $rpRows = [];
+        foreach ($rolePermissions as $roleSlug => $permSlugs) {
+            if (!isset($roleMap[$roleSlug])) continue;
+            foreach ($permSlugs as $permSlug) {
+                if (!isset($permMap[$permSlug])) continue;
+                $rpRows[] = [
+                    'role_id'       => $roleMap[$roleSlug],
+                    'permission_id' => $permMap[$permSlug],
+                    'created_at'    => $now,
+                ];
+            }
+        }
+        if (!empty($rpRows)) {
+            $this->table('kb_role_permissions')->insert($rpRows)->saveData();
+        }
+
+        // ── Built-in plugins ───────────────────────────────────────────
+        // KHÔNG seed thủ công ở đây. PluginLoader sẽ tự phát hiện các plugin
+        // trong thư mục /plugins ở lần khởi động đầu tiên, chạy install() và
+        // thêm row tương ứng vào kb_plugins (đánh dấu is_system cho core-*).
+        // Việc seed cứng dễ gây lệch slug so với folder thật → plugin "ma".
 
         // ── Default site settings ──────────────────────────────────────
         $this->table('kb_site_settings')->insert([

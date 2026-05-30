@@ -40,16 +40,17 @@ class Plugin extends AbstractPlugin
 
     public function install(): void
     {
-        // Tự động kiểm tra và thêm các cột status, notes, priority vào bảng kb_form_submissions
-        if (DB::schema()->hasTable('kb_form_submissions')) {
-            DB::schema()->table('kb_form_submissions', function (Blueprint $table) {
-                if (!DB::schema()->hasColumn('kb_form_submissions', 'status')) {
+        // Bảng thật: kb_form_submissions (Schema tự thêm prefix 'kb_').
+        // Bổ sung các cột phục vụ CRM nếu chưa có.
+        if (DB::schema()->hasTable('form_submissions')) {
+            DB::schema()->table('form_submissions', function (Blueprint $table) {
+                if (!DB::schema()->hasColumn('form_submissions', 'status')) {
                     $table->string('status')->default('new');
                 }
-                if (!DB::schema()->hasColumn('kb_form_submissions', 'notes')) {
+                if (!DB::schema()->hasColumn('form_submissions', 'notes')) {
                     $table->text('notes')->nullable();
                 }
-                if (!DB::schema()->hasColumn('kb_form_submissions', 'priority')) {
+                if (!DB::schema()->hasColumn('form_submissions', 'priority')) {
                     $table->string('priority')->default('medium');
                 }
             });
@@ -58,15 +59,15 @@ class Plugin extends AbstractPlugin
 
     public function uninstall(): void
     {
-        if (DB::schema()->hasTable('kb_form_submissions')) {
-            DB::schema()->table('kb_form_submissions', function (Blueprint $table) {
-                if (DB::schema()->hasColumn('kb_form_submissions', 'status')) {
+        if (DB::schema()->hasTable('form_submissions')) {
+            DB::schema()->table('form_submissions', function (Blueprint $table) {
+                if (DB::schema()->hasColumn('form_submissions', 'status')) {
                     $table->dropColumn('status');
                 }
-                if (DB::schema()->hasColumn('kb_form_submissions', 'notes')) {
+                if (DB::schema()->hasColumn('form_submissions', 'notes')) {
                     $table->dropColumn('notes');
                 }
-                if (DB::schema()->hasColumn('kb_form_submissions', 'priority')) {
+                if (DB::schema()->hasColumn('form_submissions', 'priority')) {
                     $table->dropColumn('priority');
                 }
             });

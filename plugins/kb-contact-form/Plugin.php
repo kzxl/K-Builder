@@ -40,8 +40,9 @@ class Plugin extends AbstractPlugin
 
     public function install(): void
     {
-        if (!DB::schema()->hasTable('kb_form_submissions')) {
-            DB::schema()->create('kb_form_submissions', function (Blueprint $table) {
+        // Dùng tên KHÔNG prefix; Capsule/Schema sẽ tự thêm 'kb_' → bảng thật: kb_form_submissions
+        if (!DB::schema()->hasTable('form_submissions')) {
+            DB::schema()->create('form_submissions', function (Blueprint $table) {
                 $table->id();
                 $table->string('name')->nullable();
                 $table->string('email')->nullable();
@@ -55,7 +56,7 @@ class Plugin extends AbstractPlugin
 
     public function uninstall(): void
     {
-        DB::schema()->dropIfExists('kb_form_submissions');
+        DB::schema()->dropIfExists('form_submissions');
     }
 
     public function registerComponents(ComponentRegistry $registry): void

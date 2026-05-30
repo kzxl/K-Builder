@@ -18,6 +18,7 @@ use KBuilder\Http\Controllers\Api\PluginController;
 use KBuilder\Http\Controllers\Api\SettingsController;
 use KBuilder\Http\Controllers\Api\ContentTypeController;
 use KBuilder\Http\Middleware\JwtMiddleware;
+use KBuilder\Http\Middleware\RequirePermission;
 use Psr\Container\ContainerInterface;
 use Slim\App;
 use Slim\Routing\RouteCollectorProxy;
@@ -29,6 +30,7 @@ class Router
     public function register(App $app): void
     {
         $jwt = new JwtMiddleware($this->container);
+        $perm = fn (string|array $p) => new RequirePermission($this->container, $p);
 
         // ── Public frontend routes ──────────────────────────────────────
         $app->get('/', [PublicController::class, 'home']);
@@ -37,19 +39,22 @@ class Router
         // ── Auth ────────────────────────────────────────────────────────
         $app->group('/api', function (RouteCollectorProxy $api) {
             $api->post('/auth/login', [AuthController::class, 'login']);
+            $api->post('/auth/refresh', [AuthController::class, 'refresh']);
             $api->post('/auth/logout', [AuthController::class, 'logout']);
-            $api->get('/auth/me', [AuthController::class, 'me']);
         });
 
         // ── Protected API ───────────────────────────────────────────────
         $app->group('/api', function (RouteCollectorProxy $g) {
 
+            // Current user
+            $g->get('/auth/me', [AuthController::class, 'me']);
+
             // Sites
             $g->get('/sites', [SiteController::class, 'index']);
-            $g->post('/sites', [SiteController::class, 'store']);
+            $g->post('/sites', [SiteController::class, 'store'])->add($perm('sites.create'));
             $g->get('/sites/{id}', [SiteController::class, 'show']);
-            $g->put('/sites/{id}', [SiteController::class, 'update']);
-            $g->delete('/sites/{id}', [SiteController::class, 'destroy']);
+            $g->put('/sites/{id}', [SiteController::class, 'update'])->add($perm('sites.edit'));
+            $g->delete('/sites/{id}', [SiteController::class, 'destroy'])->add($perm('sites.delete'));
 
             // Dashboard
             $g->get('/dashboard/stats', [\KBuilder\Http\Controllers\Api\DashboardController::class, 'stats']);
@@ -59,14 +64,14 @@ class Router
 
             // Pages
             $g->get('/pages', [PageController::class, 'index']);
-            $g->post('/pages', [PageController::class, 'store']);
+            $g->post('/pages', [PageController::class, 'store'])->add($perm('pages.create'));
             $g->get('/pages/{id}', [PageController::class, 'show']);
-            $g->put('/pages/{id}', [PageController::class, 'update']);
-            $g->post('/pages/{id}/publish', [PageController::class, 'publish']);
-            $g->post('/pages/{id}/duplicate', [PageController::class, 'duplicate']);
+            $g->put('/pages/{id}', [PageController::class, 'update'])->add($perm('pages.edit'));
+            $g->post('/pages/{id}/publish', [PageController::class, 'publish'])->add($perm('pages.publish'));
+            $g->post('/pages/{id}/duplicate', [PageController::class, 'duplicate'])->add($perm('pages.create'));
             $g->get('/pages/{id}/revisions', [PageController::class, 'revisions']);
-            $g->post('/pages/{id}/revisions/{revId}/restore', [PageController::class, 'restoreRevision']);
-            $g->delete('/pages/{id}', [PageController::class, 'destroy']);
+            $g->post('/pages/{id}/revisions/{revId}/restore', [PageController::class, 'restoreRevision'])->add($perm('pages.edit'));
+            $g->delete('/pages/{id}', [PageController::class, 'destroy'])->add($perm('pages.delete'));
 
             // Posts API
             $g->get('/posts', [PostController::class, 'index']);
@@ -93,16 +98,16 @@ class Router
 
             // Plugins
             $g->get('/plugins', [PluginController::class, 'index']);
-            $g->post('/plugins/install', [PluginController::class, 'install']);
-            $g->post('/plugins/{slug}/toggle', [PluginController::class, 'toggle']);
-            $g->delete('/plugins/{slug}', [PluginController::class, 'delete']);
+            $g->post('/plugins/install', [PluginController::class, 'install'])->add($perm('plugins.toggle'));
+            $g->post('/plugins/{slug}/toggle', [PluginController::class, 'toggle'])->add($perm('plugins.toggle'));
+            $g->delete('/plugins/{slug}', [PluginController::class, 'delete'])->add($perm('plugins.toggle'));
 
             // Settings & Tools
             $g->get('/settings/{group}', [SettingsController::class, 'getGroup']);
-            $g->put('/settings/{group}', [SettingsController::class, 'updateGroup']);
-            $g->post('/settings/tools/demo', [SettingsController::class, 'seedDemoData']);
-            $g->get('/settings/tools/export', [SettingsController::class, 'exportSite']);
-            $g->post('/settings/tools/import', [SettingsController::class, 'importSite']);
+            $g->put('/settings/{group}', [SettingsController::class, 'updateGroup'])->add($perm('settings.edit'));
+            $g->post('/settings/tools/demo', [SettingsController::class, 'seedDemoData'])->add($perm('settings.edit'));
+            $g->get('/settings/tools/export', [SettingsController::class, 'exportSite'])->add($perm('settings.edit'));
+            $g->post('/settings/tools/import', [SettingsController::class, 'importSite'])->add($perm('settings.edit'));
 
             // Admin menu (sidebar for React)
             $g->get('/admin/menus', [AdminMenuController::class, 'index']);

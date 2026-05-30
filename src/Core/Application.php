@@ -44,6 +44,24 @@ class Application
             true
         );
 
+        // Custom handler cho lỗi validation → 422 JSON thống nhất
+        $addErrorMiddleware->setErrorHandler(
+            \KBuilder\Http\Validation\ValidationException::class,
+            function (
+                \Psr\Http\Message\ServerRequestInterface $request,
+                \Throwable $exception
+            ) use ($app) {
+                /** @var \KBuilder\Http\Validation\ValidationException $exception */
+                $response = $app->getResponseFactory()->createResponse(422);
+                $response->getBody()->write(json_encode([
+                    'success' => false,
+                    'error'   => $exception->getMessage(),
+                    'errors'  => $exception->errors(),
+                ], JSON_UNESCAPED_UNICODE));
+                return $response->withHeader('Content-Type', 'application/json');
+            }
+        );
+
         // Set base path for subdirectory install
         $basePath = self::detectBasePath();
         if ($basePath) {

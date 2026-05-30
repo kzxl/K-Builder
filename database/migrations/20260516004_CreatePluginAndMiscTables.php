@@ -43,21 +43,6 @@ final class CreatePluginAndMiscTables extends AbstractMigration
             ->addIndex(['site_id', 'from_url'], ['name' => 'idx_redirect_from'])
             ->create();
 
-        $this->table('kb_contact_submissions')
-            ->addColumn('site_id', 'integer', ['signed' => false])
-            ->addColumn('form_key', 'string', ['limit' => 100, 'default' => 'default'])
-            ->addColumn('name', 'string', ['limit' => 200])
-            ->addColumn('email', 'string', ['limit' => 200])
-            ->addColumn('phone', 'string', ['limit' => 30, 'null' => true, 'default' => null])
-            ->addColumn('subject', 'string', ['limit' => 300, 'null' => true, 'default' => null])
-            ->addColumn('message', 'text', ['null' => true, 'default' => null])
-            ->addColumn('data', 'json', ['null' => true, 'default' => null])
-            ->addColumn('status', 'enum', ['values' => ['new', 'read', 'replied', 'spam'], 'default' => 'new'])
-            ->addColumn('ip', 'string', ['limit' => 45, 'null' => true, 'default' => null])
-            ->addColumn('created_at', 'datetime')
-            ->addIndex(['site_id', 'status', 'created_at'], ['name' => 'idx_contact_list'])
-            ->create();
-
         $this->table('kb_analytics_events')
             ->addColumn('site_id', 'integer', ['signed' => false])
             ->addColumn('event_type', 'string', ['limit' => 50])
@@ -89,14 +74,13 @@ final class CreatePluginAndMiscTables extends AbstractMigration
 
         // FK via raw SQL
         $this->execute('ALTER TABLE kb_redirects ADD CONSTRAINT fk_redirect_site FOREIGN KEY (site_id) REFERENCES kb_sites(id) ON DELETE CASCADE');
-        $this->execute('ALTER TABLE kb_contact_submissions ADD CONSTRAINT fk_cs_site FOREIGN KEY (site_id) REFERENCES kb_sites(id) ON DELETE CASCADE');
         $this->execute('ALTER TABLE kb_analytics_events ADD CONSTRAINT fk_ae_site FOREIGN KEY (site_id) REFERENCES kb_sites(id) ON DELETE CASCADE');
     }
 
     public function down(): void
     {
         $this->execute('SET FOREIGN_KEY_CHECKS=0');
-        foreach (['kb_activity_logs', 'kb_analytics_events', 'kb_contact_submissions', 'kb_redirects', 'kb_component_schema_versions', 'kb_plugins'] as $t) {
+        foreach (['kb_activity_logs', 'kb_analytics_events', 'kb_redirects', 'kb_component_schema_versions', 'kb_plugins'] as $t) {
             $this->table($t)->drop()->save();
         }
         $this->execute('SET FOREIGN_KEY_CHECKS=1');

@@ -103,6 +103,30 @@ class AuthService
         $this->users->revokeRefreshToken($hash);
     }
 
+    /**
+     * Lấy thông tin profile của user hiện tại (dùng cho GET /auth/me).
+     */
+    public function me(int $userId): array
+    {
+        $user = $this->users->findById($userId);
+
+        if (!$user) {
+            throw new RuntimeException('Người dùng không tồn tại', 404);
+        }
+
+        $roles = $this->users->getRoles($userId);
+
+        return [
+            'id'     => $user['id'],
+            'uuid'   => $user['uuid'],
+            'name'   => $user['name'],
+            'email'  => $user['email'],
+            'avatar' => $user['avatar'],
+            'status' => $user['status'],
+            'roles'  => $roles,
+        ];
+    }
+
     // ─────────────────────────────────────────────
 
     private function issueAccessToken(array $user, array $roles): string

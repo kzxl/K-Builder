@@ -38,7 +38,7 @@ class ContactController
         }
 
         try {
-            DB::table('kb_form_submissions')->insert([
+            DB::table('form_submissions')->insert([
                 'name' => $name,
                 'email' => $email,
                 'phone' => $phone,

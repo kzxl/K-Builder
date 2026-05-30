@@ -67,6 +67,25 @@ class AuthController
         return $this->json($response, ['success' => true, 'message' => 'Đăng xuất thành công']);
     }
 
+    /**
+     * Trả về thông tin user hiện tại dựa trên JWT (route được bảo vệ bởi JwtMiddleware).
+     */
+    public function me(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
+    {
+        $userId = (int) $request->getAttribute('auth_user_id');
+
+        if (!$userId) {
+            return $this->json($response, ['success' => false, 'error' => 'Unauthenticated'], 401);
+        }
+
+        try {
+            $user = $this->authService->me($userId);
+            return $this->json($response, ['success' => true, 'data' => $user]);
+        } catch (\RuntimeException $e) {
+            return $this->json($response, ['success' => false, 'error' => $e->getMessage()], (int) $e->getCode() ?: 404);
+        }
+    }
+
     private function json(ResponseInterface $response, array $data, int $status = 200): ResponseInterface
     {
         $response->getBody()->write(json_encode($data, JSON_UNESCAPED_UNICODE));
