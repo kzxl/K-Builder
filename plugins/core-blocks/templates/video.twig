@@ -1,0 +1,26 @@
+<section class="kb-section kb-video" style="padding: var(--kb-section-py, 60px) 1rem; background: var(--kb-bg);">
+    <div class="kb-container" style="max-width: {{ max_width|default('800px') }}; margin: 0 auto;">
+        {% if title %}
+        <h2 style="text-align:center; font-size:1.75rem; font-weight:700; color:var(--kb-text); margin-bottom:1.5rem;">{{ title }}</h2>
+        {% endif %}
+
+        {% set ratio = aspect == '4-3' ? '75%' : (aspect == '1-1' ? '100%' : '56.25%') %}
+        <div style="position:relative; width:100%; padding-top:{{ ratio }}; border-radius:var(--kb-radius); overflow:hidden; background:#000;">
+            {% if provider == 'youtube' %}
+                <iframe src="https://www.youtube.com/embed/{{ video_id }}" title="{{ title|default('Video') }}"
+                    style="position:absolute; inset:0; width:100%; height:100%; border:0;"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+            {% elseif provider == 'vimeo' %}
+                <iframe src="https://player.vimeo.com/video/{{ video_id }}" title="{{ title|default('Video') }}"
+                    style="position:absolute; inset:0; width:100%; height:100%; border:0;"
+                    allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>
+            {% elseif provider == 'file' and url %}
+                <video controls style="position:absolute; inset:0; width:100%; height:100%;">
+                    <source src="{{ url }}">
+                </video>
+            {% else %}
+                <div style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; color:#fff;">Chưa cấu hình video</div>
+            {% endif %}
+        </div>
+    </div>
+</section>

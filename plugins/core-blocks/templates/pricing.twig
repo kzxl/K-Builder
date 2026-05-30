@@ -1,0 +1,38 @@
+<section class="kb-section kb-pricing" style="padding: var(--kb-section-py, 80px) 1rem; background: var(--kb-bg);">
+    <div class="kb-container" style="max-width: var(--kb-container, 1200px); margin: 0 auto;">
+        {% if title %}
+        <h2 style="text-align:center; font-size:2rem; font-weight:700; color:var(--kb-text); margin-bottom:0.5rem;">{{ title }}</h2>
+        {% endif %}
+        {% if subtitle %}
+        <p style="text-align:center; color:var(--kb-secondary); margin-bottom:3rem;">{{ subtitle|raw }}</p>
+        {% endif %}
+
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); gap:1.5rem; align-items:stretch;">
+            {% for plan in plans %}
+            <div style="display:flex; flex-direction:column; padding:2rem; border-radius:var(--kb-radius); border:1px solid {{ plan.featured ? 'var(--kb-primary)' : '#E2E8F0' }}; background:#fff; {% if plan.featured %}box-shadow:0 10px 25px -5px rgba(37,99,235,0.25); transform:scale(1.03);{% endif %}">
+                {% if plan.featured %}
+                <div style="align-self:flex-start; background:var(--kb-primary); color:#fff; font-size:0.7rem; font-weight:600; padding:0.25rem 0.75rem; border-radius:999px; margin-bottom:1rem;">PHỔ BIẾN</div>
+                {% endif %}
+                <h3 style="font-size:1.25rem; font-weight:700; color:var(--kb-text);">{{ plan.name }}</h3>
+                <div style="margin:1rem 0;">
+                    <span style="font-size:2.25rem; font-weight:800; color:var(--kb-text);">{{ plan.price }}</span>
+                    <span style="color:var(--kb-secondary);">{{ plan.period }}</span>
+                </div>
+                <ul style="list-style:none; padding:0; margin:0 0 1.5rem; display:flex; flex-direction:column; gap:0.6rem; flex:1;">
+                    {% for line in plan.features|split('\n') %}
+                        {% if line|trim %}
+                        <li style="display:flex; align-items:center; gap:0.5rem; color:var(--kb-text); font-size:0.95rem;">
+                            <span style="color:var(--kb-primary);">&#10003;</span> {{ line|trim }}
+                        </li>
+                        {% endif %}
+                    {% endfor %}
+                </ul>
+                <a href="{{ plan.cta_url|default('#') }}"
+                   style="display:block; text-align:center; padding:0.75rem 1rem; border-radius:var(--kb-radius); font-weight:600; text-decoration:none; {{ plan.featured ? 'background:var(--kb-primary); color:#fff;' : 'background:transparent; color:var(--kb-primary); border:1px solid var(--kb-primary);' }}">
+                    {{ plan.cta_text|default('Chọn gói') }}
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
