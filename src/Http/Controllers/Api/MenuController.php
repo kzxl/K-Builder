@@ -10,10 +10,15 @@ use Illuminate\Database\Capsule\Manager as DB;
 
 class MenuController
 {
+    private function getSiteId(ServerRequestInterface $request): int
+    {
+        return (int) ($request->getAttribute('auth_site_id') ?? 1);
+    }
+
     /** GET /api/menus */
     public function index(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
-        $siteId = 1; // Giả lập current site
+        $siteId = $this->getSiteId($request);
         $menus = DB::table('menus')->where('site_id', $siteId)->get();
         return $this->json($response, ['success' => true, 'data' => $menus]);
     }
@@ -40,7 +45,7 @@ class MenuController
     public function store(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
         $body = $request->getParsedBody() ?? [];
-        $siteId = 1;
+        $siteId = $this->getSiteId($request);
 
         $id = DB::table('menus')->insertGetId([
             'site_id' => $siteId,

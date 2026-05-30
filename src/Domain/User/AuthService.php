@@ -34,8 +34,9 @@ class AuthService
         }
 
         $roles = $this->users->getRoles((int) $user['id']);
+        $siteId = $this->users->getDefaultSiteId((int) $user['id']);
 
-        $accessToken  = $this->issueAccessToken($user, $roles);
+        $accessToken  = $this->issueAccessToken($user, $roles, $siteId);
         $refreshToken = $this->issueRefreshToken((int) $user['id'], $ip);
 
         $this->users->updateLastLogin((int) $user['id']);
@@ -45,12 +46,13 @@ class AuthService
             'refresh_token' => $refreshToken,
             'expires_in'    => $this->authConfig['expiry'],
             'user'          => [
-                'id'     => $user['id'],
-                'uuid'   => $user['uuid'],
-                'name'   => $user['name'],
-                'email'  => $user['email'],
-                'avatar' => $user['avatar'],
-                'roles'  => $roles,
+                'id'      => $user['id'],
+                'uuid'    => $user['uuid'],
+                'name'    => $user['name'],
+                'email'   => $user['email'],
+                'avatar'  => $user['avatar'],
+                'roles'   => $roles,
+                'site_id' => $siteId,
             ],
         ];
     }
@@ -85,13 +87,14 @@ class AuthService
 
         $user  = $this->users->findById((int) $stored['user_id']);
         $roles = $this->users->getRoles((int) $user['id']);
+        $siteId = $this->users->getDefaultSiteId((int) $user['id']);
 
         // Rotate refresh token
         $this->users->revokeRefreshToken($hash);
         $newRefresh = $this->issueRefreshToken((int) $user['id'], $ip);
 
         return [
-            'access_token'  => $this->issueAccessToken($user, $roles),
+            'access_token'  => $this->issueAccessToken($user, $roles, $siteId),
             'refresh_token' => $newRefresh,
             'expires_in'    => $this->authConfig['expiry'],
         ];
@@ -129,18 +132,19 @@ class AuthService
 
     // ─────────────────────────────────────────────
 
-    private function issueAccessToken(array $user, array $roles): string
+    private function issueAccessToken(array $user, array $roles, ?int $siteId = null): string
     {
         $now    = time();
         $expiry = $now + $this->authConfig['expiry'];
 
         $payload = [
-            'iss'   => $this->authConfig['issuer'],
-            'iat'   => $now,
-            'exp'   => $expiry,
-            'sub'   => (string) $user['id'],
-            'email' => $user['email'],
-            'roles' => $roles,
+            'iss'     => $this->authConfig['issuer'],
+            'iat'     => $now,
+            'exp'     => $expiry,
+            'sub'     => (string) $user['id'],
+            'email'   => $user['email'],
+            'roles'   => $roles,
+            'site_id' => $siteId,
         ];
 
         return JWT::encode($payload, $this->authConfig['secret'], 'HS256');

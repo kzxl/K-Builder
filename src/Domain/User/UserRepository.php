@@ -69,4 +69,34 @@ class UserRepository
             ->pluck('r.slug')
             ->toArray();
     }
+
+    /**
+     * Lấy site_id mặc định của user (site đầu tiên user thuộc về).
+     * Trả về null nếu user chưa được gán site nào.
+     */
+    public function getDefaultSiteId(int $userId): ?int
+    {
+        $row = DB::table('site_users')
+            ->where('user_id', $userId)
+            ->orderBy('site_id', 'asc')
+            ->first();
+
+        return $row ? (int) $row->site_id : null;
+    }
+
+    /**
+     * Danh sách site mà user có quyền truy cập (kèm role tại từng site).
+     *
+     * @return array<int, array{id:int,name:string,slug:string,role_id:int}>
+     */
+    public function getAccessibleSites(int $userId): array
+    {
+        return DB::table('site_users as su')
+            ->join('sites as s', 's.id', '=', 'su.site_id')
+            ->where('su.user_id', $userId)
+            ->whereNull('s.deleted_at')
+            ->get(['s.id', 's.name', 's.slug', 'su.role_id'])
+            ->map(fn ($r) => (array) $r)
+            ->toArray();
+    }
 }
