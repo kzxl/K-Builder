@@ -5,11 +5,17 @@ KBuilder là một nền tảng quản trị nội dung (CMS) và Page Builder h
 Hệ thống được phát triển với triết lý tối ưu hoá hiệu năng, mở rộng vô hạn qua Plugin và mang lại trải nghiệm chuẩn "SaaS cao cấp".
 
 ## 🌟 Tính năng nổi bật
-- **Visual Page Builder:** Xây dựng trang web bằng thao tác kéo thả trực quan, xem trước (Live Preview) theo thời gian thực.
+- **Visual Page Builder:** Xây dựng trang web bằng thao tác kéo thả trực quan, xem trước (Live Preview) theo thời gian thực, kèm **Undo/Redo** và **Lịch sử phiên bản (Revisions)**.
+- **Responsive Preview:** Xem trước Desktop / Tablet / Mobile ngay trong Builder.
 - **Nested Layouts:** Hỗ trợ lồng ghép Component không giới hạn (ví dụ: Chia cột, lồng khối Text, Image bên trong các cột).
-- **Dynamic Content:** Liên kết dữ liệu động trực tiếp vào giao diện (Query Loop cho Posts/Products) chỉ với một cú click chuột.
+- **Dynamic Content:** Liên kết dữ liệu động trực tiếp vào giao diện (Query Loop cho Posts) chỉ với một cú click chuột.
 - **Glassmorphism Admin UI:** Bảng điều khiển quản trị siêu mượt, được thiết kế theo phong cách hiện đại với React.
-- **Extensible Plugin System:** Kiến trúc PHP lõi hỗ trợ tạo Component/Plugin mới cực kỳ dễ dàng.
+- **Extensible Plugin System:** Kiến trúc PHP lõi hỗ trợ tạo Component/Plugin mới cực kỳ dễ dàng qua hệ thống Hook (action/filter).
+- **Bảo mật & Phân quyền (RBAC):** JWT (access + refresh token xoay vòng), middleware kiểm tra quyền theo vai trò, rate limiting và security headers.
+- **SEO toàn diện:** `sitemap.xml` động, `robots.txt`, trình quản lý Redirect (301/302), thẻ Meta/OpenGraph/JSON-LD theo từng trang.
+- **Form Builder:** Tạo biểu mẫu tùy biến bằng kéo thả, lưu submission linh hoạt và quản lý trong Admin.
+- **Caching:** Cache HTML trang công khai (driver File hoặc Redis) với tự động vô hiệu hóa khi nội dung thay đổi.
+- **Multi-site sẵn sàng:** `site_id` được nhúng trong JWT, hạ tầng đa tenant ở tầng dữ liệu.
 
 ## 🚀 Hướng dẫn cài đặt
 
@@ -49,6 +55,17 @@ Hệ thống được phát triển với triết lý tối ưu hoá hiệu năn
    - Trỏ thư mục gốc (Document Root) của domain ảo (Virtual Host) vào thư mục `public` của project.
    - Nếu chạy trong thư mục con (Sub-directory) qua XAMPP (VD: `localhost/kbuilder/public`), hệ thống hỗ trợ auto-detect path, nhưng tối ưu nhất vẫn là dùng Virtual Host.
 
+6. **Chạy kiểm thử (tùy chọn):**
+   ```bash
+   composer test
+   # hoặc: vendor/bin/phpunit
+   ```
+
+> ⚠️ **Lưu ý bảo mật trước khi triển khai production:**
+> - Đặt `JWT_SECRET`, `APP_KEY` thành chuỗi ngẫu nhiên; cấu hình `DB_PASSWORD`, `APP_URL` thật trong `.env`.
+> - Đặt `APP_ENV=production` và `APP_DEBUG=false`.
+> - Biến `APP_DEBUG_REQUESTS` chỉ nên bật khi cần debug (ghi log mọi request).
+
 ## 🔐 Tài khoản Quản trị mặc định
 
 Sau khi chạy lệnh `seed:run`, một tài khoản Super Admin sẽ được khởi tạo tự động.
@@ -64,12 +81,13 @@ Sau khi chạy lệnh `seed:run`, một tài khoản Super Admin sẽ được k
 ```
 kbuilder/
 ├── apps/admin/          # Mã nguồn Frontend React SPA cho Admin Dashboard
-├── config/              # Các file cấu hình hệ thống (DB, App, Cache...)
+├── config/              # Các file cấu hình hệ thống (DB, App, Cache, Auth)
 ├── database/            # Phinx Migrations & Seeders
 ├── plugins/             # Thư mục chứa các Plugin & Component mở rộng
 ├── public/              # Thư mục gốc Web (index.php, CSS, JS tĩnh)
-├── src/                 # Mã nguồn Backend PHP (Domain, Http, Core)
-└── templates/           # Twig templates cho giao diện Public
+├── src/                 # Mã nguồn Backend PHP (Core, Domain, Http)
+├── templates/           # Twig templates cho giao diện Public
+└── tests/               # Unit test (PHPUnit)
 ```
 
 ## 🛠 Cách tạo nội dung mẫu nhanh (Demo Data)
@@ -79,12 +97,46 @@ Bên trong Admin Dashboard:
 3. Bấm vào nút **"Bắt đầu khởi tạo Demo"**.
 Hệ thống sẽ tự động tạo cấu trúc Trang chủ, Tin tức, Danh mục... giúp bạn trải nghiệm tính năng Builder ngay lập tức.
 
-## 🗺 Roadmap (Các tính năng cần hoàn thiện)
-Dưới đây là các hạng mục dự kiến sẽ tiếp tục được nâng cấp trong các phiên bản tiếp theo:
+## 🧩 Plugin & Component có sẵn
 
-- [ ] **Hệ thống Đa ngôn ngữ (i18n)**: Hỗ trợ dịch nội dung bài viết, trang và giao diện ra nhiều ngôn ngữ.
-- [ ] **Lịch sử chỉnh sửa (Revisions)**: Cải tiến Builder cho phép Undo/Redo và khôi phục các phiên bản cũ của Trang/Bài viết.
-- [ ] **Tối ưu SEO & Performance Frontend**: Tự động Minify CSS/JS cho giao diện người dùng cuối, Lazy-load ảnh.
-- [ ] **Trình quản lý Form (Form Builder)**: Khối Component kéo thả cho phép tạo Contact Form tùy chỉnh và lưu cấu hình vào hệ thống.
-- [ ] **Hệ thống Caching toàn diện**: Áp dụng Redis/Memcached mạnh mẽ cho việc Render View và Query Database.
-- [ ] **Theme Customizer mở rộng**: Cho phép tải lên cấu hình Typography, Palette màu nâng cao từ file định dạng chuẩn.
+**Component khối (Builder blocks):**
+- `core-hero` — Hero (fullwidth / split / minimal)
+- `core-text`, `core-button`, `core-image` — khối nội dung cơ bản
+- `core-columns` — bố cục chia cột (nested layout)
+- `core-features`, `core-faq` — section tính năng & hỏi đáp
+- `core-blocks` — **Video, Bảng giá (Pricing), Thư viện ảnh (Gallery)**
+- `kb-post-grid` — lưới bài viết (dynamic content)
+
+**Plugin chức năng:**
+- `kb-form-builder` — **Trình tạo biểu mẫu kéo thả** (lưu submission dạng JSON)
+- `kb-contact-form` + `kb-contact-manager` — biểu mẫu liên hệ & CRM
+- `kb-seo-manager` — **sitemap động, robots.txt, redirect manager**
+- `kb-security` — **rate limiting & security headers**
+- `kb-analytics` — theo dõi lượt truy cập
+- `kb-theme-manager` — quản lý giao diện & CSS tùy chỉnh
+
+## 🔌 API tổng quan
+
+- **Auth:** `POST /api/auth/login`, `POST /api/auth/refresh`, `POST /api/auth/logout`, `GET /api/auth/me`
+- **Nội dung:** `/api/pages` (kèm `publish`, `duplicate`, `revisions`, `revisions/{id}/restore`), `/api/posts`, `/api/taxonomies`
+- **Builder:** `/api/components`, `/api/components/preview`
+- **Quản lý:** `/api/media`, `/api/menus`, `/api/plugins`, `/api/settings/{group}`, `/api/sites`
+- **RBAC:** `/api/users`, `/api/roles`
+- **Công khai:** `GET /sitemap.xml`, `GET /robots.txt`
+
+Toàn bộ nhóm `/api` (trừ auth) được bảo vệ bằng JWT; các thao tác nhạy cảm có thêm middleware kiểm tra quyền.
+
+## 🗺 Roadmap
+
+**Đã hoàn thiện:**
+- [x] **Lịch sử chỉnh sửa (Revisions):** Undo/Redo trong Builder và khôi phục phiên bản cũ của Trang.
+- [x] **Trình quản lý Form (Form Builder):** Khối kéo thả tạo form tùy chỉnh và lưu submission.
+- [x] **Hệ thống Caching:** Cache render trang công khai với driver File/Redis và tự động vô hiệu hóa.
+- [x] **Tối ưu SEO & Performance:** Sitemap động, robots.txt, redirect manager, lazy-load ảnh.
+- [x] **Phân quyền (RBAC) & Bảo mật:** Middleware kiểm tra quyền, rate limiting, security headers.
+- [x] **Quản lý người dùng:** Giao diện CRUD user + gán vai trò.
+
+**Dự kiến tiếp theo:**
+- [ ] **Hệ thống Đa ngôn ngữ (i18n):** Hỗ trợ dịch nội dung bài viết, trang và giao diện ra nhiều ngôn ngữ.
+- [ ] **Theme Customizer mở rộng:** Cho phép tải lên cấu hình Typography, Palette màu nâng cao từ file định dạng chuẩn.
+- [ ] **Multi-site đầy đủ:** Giao diện chuyển đổi và quản lý nhiều site trong Admin.
