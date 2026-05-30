@@ -6,6 +6,7 @@ namespace KBuilder\Http\Controllers;
 
 use KBuilder\Core\Component\ComponentRegistry;
 use KBuilder\Core\Hook\HookSystem;
+use KBuilder\Core\Cache\CacheManager;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Illuminate\Database\Capsule\Manager as DB;
@@ -16,7 +17,8 @@ class PublicController
     public function __construct(
         private readonly Environment $twig,
         private readonly ComponentRegistry $registry,
-        private readonly HookSystem $hooks
+        private readonly HookSystem $hooks,
+        private readonly CacheManager $cache
     ) {}
 
     public function home(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
@@ -38,12 +40,26 @@ class PublicController
 
     private function renderPage(string $slug, ResponseInterface $response, ServerRequestInterface $request): ResponseInterface
     {
+        $params = $request->getQueryParams();
+        $isPreview = !empty($params['preview']) && $params['preview'] === '1';
+
+        // Cache HTML cho trang published (bỏ qua preview để luôn xem bản nháp mới nhất)
+        $cacheEnabled = !$isPreview;
+        $cacheKey = 'page_html:' . $slug;
+
+        if ($cacheEnabled) {
+            $cached = $this->cache->get($cacheKey);
+            if ($cached !== null) {
+                $response->getBody()->write($cached);
+                return $response->withHeader('X-KB-Cache', 'HIT');
+            }
+        }
+
         $query = DB::table('pages')
             ->where('slug', $slug)
             ->whereNull('deleted_at');
 
-        $params = $request->getQueryParams();
-        if (empty($params['preview']) || $params['preview'] !== '1') {
+        if (!$isPreview) {
             $query->where('status', 'published');
         }
 
@@ -101,8 +117,12 @@ class PublicController
 
         $html = $this->hooks->applyFilters('kb_after_render_page', $html, $page);
 
+        if ($cacheEnabled) {
+            $this->cache->set($cacheKey, $html, 3600);
+        }
+
         $response->getBody()->write($html);
-        return $response;
+        return $response->withHeader('X-KB-Cache', $cacheEnabled ? 'MISS' : 'BYPASS');
     }
 
     public function sitemap(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface

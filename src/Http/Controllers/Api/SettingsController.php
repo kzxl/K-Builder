@@ -7,9 +7,14 @@ namespace KBuilder\Http\Controllers\Api;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Illuminate\Database\Capsule\Manager as DB;
+use KBuilder\Core\Cache\CacheManager;
 
 class SettingsController
 {
+    public function __construct(
+        private readonly CacheManager $cache
+    ) {}
+
     /** GET /api/settings/{group} */
     public function getGroup(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
     {
@@ -35,6 +40,9 @@ class SettingsController
                 ['value' => $value, 'type' => 'string']
             );
         }
+
+        // Theme/general settings ảnh hưởng mọi trang → xóa toàn bộ cache HTML
+        $this->cache->flush();
 
         return $this->json($response, ['success' => true]);
     }
@@ -118,6 +126,8 @@ class SettingsController
             ['site_id' => $siteId, 'title' => 'Liên hệ', 'slug' => 'lien-he', 'status' => 'published', 'layout' => '[]', 'author_id' => 1, 'created_at' => $now]
         ]);
 
+        $this->cache->flush();
+
         return $this->json($response, ['success' => true, 'message' => 'Đã khởi tạo dữ liệu mẫu!']);
     }
 
@@ -192,6 +202,7 @@ class SettingsController
             }
 
             DB::commit();
+            $this->cache->flush();
             return $this->json($response, ['success' => true]);
         } catch (\Exception $e) {
             DB::rollBack();

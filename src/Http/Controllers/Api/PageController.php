@@ -7,13 +7,28 @@ namespace KBuilder\Http\Controllers\Api;
 use Illuminate\Database\Capsule\Manager as DB;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use KBuilder\Core\Cache\CacheManager;
+use KBuilder\Http\Validation\Validator;
+use Respect\Validation\Validator as v;
 
 class PageController
 {
+    public function __construct(
+        private readonly CacheManager $cache
+    ) {}
+
     private function json(ResponseInterface $response, array $data, int $status = 200): ResponseInterface
     {
         $response->getBody()->write(json_encode($data, JSON_UNESCAPED_UNICODE));
         return $response->withHeader('Content-Type', 'application/json')->withStatus($status);
+    }
+
+    /** Xóa cache HTML của một trang theo slug. */
+    private function forgetPageCache(?string $slug): void
+    {
+        if ($slug) {
+            $this->cache->delete('page_html:' . $slug);
+        }
     }
 
     private function getSiteId(ServerRequestInterface $request): int
@@ -40,9 +55,10 @@ class PageController
         $authorId = (int) $request->getAttribute('auth_user_id');
         $body = $request->getParsedBody() ?? [];
 
-        if (empty($body['title']) || empty($body['slug'])) {
-            return $this->json($response, ['success' => false, 'error' => 'Title and slug are required'], 422);
-        }
+        Validator::validate($body, [
+            'title' => v::notEmpty()->stringType()->length(1, 255),
+            'slug'  => v::notEmpty()->slug(),
+        ]);
 
         // Check unique slug per site
         $exists = DB::table('pages')
@@ -128,6 +144,12 @@ class PageController
 
         DB::table('pages')->where('id', $id)->update($updateData);
 
+        // Invalidate cache (slug cũ + slug mới nếu đổi)
+        $this->forgetPageCache($page->slug);
+        if (isset($body['slug'])) {
+            $this->forgetPageCache($body['slug']);
+        }
+
         return $this->json($response, ['success' => true]);
     }
 
@@ -136,11 +158,17 @@ class PageController
         $id = (int) $args['id'];
         $siteId = $this->getSiteId($request);
 
+        $page = DB::table('pages')->where('id', $id)->where('site_id', $siteId)->first();
+
         // Soft delete
         DB::table('pages')
             ->where('id', $id)
             ->where('site_id', $siteId)
             ->update(['deleted_at' => date('Y-m-d H:i:s')]);
+
+        if ($page) {
+            $this->forgetPageCache($page->slug);
+        }
 
         return $this->json($response, ['success' => true]);
     }
@@ -159,6 +187,11 @@ class PageController
                 'updated_at' => date('Y-m-d H:i:s')
             ]);
 
+        $page = DB::table('pages')->where('id', $id)->first();
+        if ($page) {
+            $this->forgetPageCache($page->slug);
+        }
+
         return $this->json($response, ['success' => true]);
     }
 
@@ -176,8 +209,64 @@ class PageController
 
     public function restoreRevision(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
     {
-        // TODO: Phục hồi layout từ bảng kb_page_revisions dựa theo revId
-        return $this->json($response, ['success' => true, 'message' => 'Pending implement']);
+        $id    = (int) $args['id'];
+        $revId = (int) $args['revId'];
+        $siteId = $this->getSiteId($request);
+        $authorId = (int) $request->getAttribute('auth_user_id');
+
+        $page = DB::table('pages')
+            ->where('id', $id)
+            ->where('site_id', $siteId)
+            ->whereNull('deleted_at')
+            ->first();
+
+        if (!$page) {
+            return $this->json($response, ['success' => false, 'error' => 'Page not found'], 404);
+        }
+
+        $revision = DB::table('page_revisions')
+            ->where('id', $revId)
+            ->where('page_id', $id)
+            ->first();
+
+        if (!$revision) {
+            return $this->json($response, ['success' => false, 'error' => 'Revision not found'], 404);
+        }
+
+        $now = date('Y-m-d H:i:s');
+
+        DB::beginTransaction();
+        try {
+            // Lưu snapshot trạng thái hiện tại trước khi phục hồi (để có thể undo)
+            DB::table('page_revisions')->insert([
+                'page_id'    => $id,
+                'layout'     => $page->layout,
+                'seo'        => $page->seo,
+                'author_id'  => $authorId,
+                'created_at' => $now,
+                'note'       => 'Snapshot trước khi phục hồi revision #' . $revId,
+            ]);
+
+            // Phục hồi layout/seo từ revision được chọn
+            DB::table('pages')->where('id', $id)->update([
+                'layout'     => $revision->layout,
+                'seo'        => $revision->seo,
+                'updated_at' => $now,
+            ]);
+
+            DB::commit();
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            return $this->json($response, ['success' => false, 'error' => $e->getMessage()], 500);
+        }
+
+        $this->forgetPageCache($page->slug);
+
+        return $this->json($response, [
+            'success' => true,
+            'message' => 'Đã phục hồi phiên bản #' . $revId,
+            'layout'  => $revision->layout ? json_decode($revision->layout, true) : [],
+        ]);
     }
 
     public function duplicate(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface
