@@ -123,6 +123,10 @@ export default function AdminLayout() {
           {user?.roles?.includes('super_admin') && (
             <>
               <div className="kb-nav-label" style={{ marginTop: '1.5rem' }}>Quản trị hệ thống</div>
+              <NavLink to="/users" className={({isActive}) => `kb-nav-item ${isActive ? 'active' : ''}`}>
+                <Users size={20} />
+                <span>Người dùng</span>
+              </NavLink>
               <NavLink to="/plugins" className={({isActive}) => `kb-nav-item ${isActive ? 'active' : ''}`}>
                 <Settings size={20} />
                 <span>Quản lý Plugins</span>

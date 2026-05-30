@@ -19,6 +19,7 @@ import ThemeSettings from './pages/Plugins/ThemeSettings';
 import Analytics from './pages/Plugins/Analytics';
 import PluginPlaceholder from './pages/Plugins/PluginPlaceholder';
 import Contacts from './pages/Plugins/Contacts';
+import UserList from './pages/Users/UserList';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isInitializing } = useAuthStore();
@@ -75,6 +76,7 @@ export default function App() {
           <Route path="taxonomies/:type/:id" element={<TaxonomyEditor />} />
           <Route path="media" element={<MediaLibrary />} />
           <Route path="menus" element={<Menus />} />
+          <Route path="users" element={<UserList />} />
           <Route path="settings" element={<Settings />} />
           <Route path="plugins" element={<PluginsList />} />
           <Route path="plugins/docs" element={<PluginDocs />} />

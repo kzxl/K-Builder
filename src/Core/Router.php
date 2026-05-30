@@ -120,6 +120,14 @@ class Router
             $g->put('/menus/{id}', [MenuController::class, 'update']);
             $g->delete('/menus/{id}', [MenuController::class, 'destroy']);
 
+            // Users & Roles (RBAC management)
+            $g->get('/roles', [\KBuilder\Http\Controllers\Api\UserController::class, 'roles']);
+            $g->get('/users', [\KBuilder\Http\Controllers\Api\UserController::class, 'index'])->add($perm('users.view'));
+            $g->post('/users', [\KBuilder\Http\Controllers\Api\UserController::class, 'store'])->add($perm('users.create'));
+            $g->get('/users/{id}', [\KBuilder\Http\Controllers\Api\UserController::class, 'show'])->add($perm('users.view'));
+            $g->put('/users/{id}', [\KBuilder\Http\Controllers\Api\UserController::class, 'update'])->add($perm('users.edit'));
+            $g->delete('/users/{id}', [\KBuilder\Http\Controllers\Api\UserController::class, 'destroy'])->add($perm('users.delete'));
+
         })->add($jwt);
 
         // ── Admin SPA ───────────────────────────────────────────────────
