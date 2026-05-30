@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Save, Play, Monitor, Smartphone, Undo2, Redo2, History, X } from 'lucide-react';
+import { ArrowLeft, Save, Play, Monitor, Smartphone, Tablet, Undo2, Redo2, History, X } from 'lucide-react';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import api from '../../lib/api';
@@ -31,6 +31,10 @@ export default function Builder() {
   const [showRevisions, setShowRevisions] = useState(false);
   const [revisions, setRevisions] = useState<any[]>([]);
   const [revLoading, setRevLoading] = useState(false);
+
+  // Responsive preview
+  const [device, setDevice] = useState<'desktop' | 'tablet' | 'mobile'>('desktop');
+  const deviceWidths: Record<string, string> = { desktop: '1200px', tablet: '768px', mobile: '390px' };
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
@@ -238,10 +242,11 @@ export default function Builder() {
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-          {/* Viewport toggles (Desktop/Mobile) - Demo purpose */}
+          {/* Viewport toggles (Desktop/Tablet/Mobile) */}
           <div style={{ display: 'flex', background: 'hsl(var(--color-surface-hover))', borderRadius: 'var(--radius-md)', padding: '0.25rem' }}>
-             <button className="kb-btn" style={{ padding: '0.4rem', background: 'white', boxShadow: 'var(--shadow-sm)' }}><Monitor size={16} /></button>
-             <button className="kb-btn" style={{ padding: '0.4rem', color: 'hsl(var(--color-text-muted))' }}><Smartphone size={16} /></button>
+             <button onClick={() => setDevice('desktop')} title="Desktop" className="kb-btn" style={{ padding: '0.4rem', background: device === 'desktop' ? 'white' : 'transparent', boxShadow: device === 'desktop' ? 'var(--shadow-sm)' : 'none', color: device === 'desktop' ? 'inherit' : 'hsl(var(--color-text-muted))' }}><Monitor size={16} /></button>
+             <button onClick={() => setDevice('tablet')} title="Tablet" className="kb-btn" style={{ padding: '0.4rem', background: device === 'tablet' ? 'white' : 'transparent', boxShadow: device === 'tablet' ? 'var(--shadow-sm)' : 'none', color: device === 'tablet' ? 'inherit' : 'hsl(var(--color-text-muted))' }}><Tablet size={16} /></button>
+             <button onClick={() => setDevice('mobile')} title="Mobile" className="kb-btn" style={{ padding: '0.4rem', background: device === 'mobile' ? 'white' : 'transparent', boxShadow: device === 'mobile' ? 'var(--shadow-sm)' : 'none', color: device === 'mobile' ? 'inherit' : 'hsl(var(--color-text-muted))' }}><Smartphone size={16} /></button>
           </div>
 
           <a href={`/kbuilder/${page?.slug}?preview=1`} target="_blank" className="kb-btn" style={{ padding: '0.5rem 1rem', background: 'hsl(var(--color-surface-hover))' }}>
@@ -261,7 +266,7 @@ export default function Builder() {
 
         {/* Center Canvas - DnD Area */}
         <div style={{ flex: 1, overflowY: 'auto', padding: '2rem', display: 'flex', justifyContent: 'center' }}>
-          <div style={{ width: '100%', maxWidth: '1200px', background: 'white', minHeight: '100%', boxShadow: 'var(--shadow-md)', borderRadius: 'var(--radius-lg)', padding: '2rem' }}>
+          <div style={{ width: '100%', maxWidth: deviceWidths[device], background: 'white', minHeight: '100%', boxShadow: 'var(--shadow-md)', borderRadius: 'var(--radius-lg)', padding: '2rem', transition: 'max-width 0.3s ease' }}>
             {layout.length === 0 ? (
               <div style={{ textAlign: 'center', padding: '4rem', color: 'hsl(var(--color-text-muted))', border: '2px dashed hsl(var(--color-border))', borderRadius: 'var(--radius-md)' }}>
                 Kéo thả component từ cột trái vào đây, hoặc click để thêm.
